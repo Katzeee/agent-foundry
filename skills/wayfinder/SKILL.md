@@ -14,7 +14,7 @@ Wayfinder is **planning** by default: each ticket resolves a decision, and the m
 
 ## Refer by name
 
-Every map and ticket is an issue, so it has a **name** — its title. In everything the human reads — narration, the map's Decisions-so-far — refer to it by that name, never by a bare id, number, or slug. A wall of `#42, #43, #44` is illegible; names read at a glance. The id and URL don't vanish — a name wraps its link — but they ride *inside* the name, never stand in for it.
+Every map and ticket is an issue, so it has a **name** — its title. In everything the human reads — narration, the map's Decisions-so-far — refer to it by that name, never by a bare id, number, or slug. A wall of `#42, #43, #44` is illegible; names read at a glance. The id and link don't vanish — a name wraps its link — but they ride *inside* the name, never stand in for it.
 
 ## The Map
 
@@ -22,7 +22,7 @@ The map is a single issue on this repo's issue tracker — the canonical artifac
 
 The map is an **index**, not a store. It lists the decisions made and points at the tickets that hold their detail; a decision lives in exactly one place — its ticket — so the map never restates it, only gists it and links.
 
-**Where the map, its child tickets, blocking, and frontier queries physically live is tracker-specific.** Ensure `docs/agents/issue-tracker.md` is usable — run `/wayfinder-setup` if not — and consult its "Wayfinding operations" section. Before interpreting the user's request, run the bundled Tracker collector for the low-resolution view across every map.
+**Where the map, its child tickets, blocking, and frontier queries physically live is tracker-specific.** Ensure `docs/agents/issue-tracker.md` is usable — run `/wayfinder-setup` if not — and consult its "Wayfinding operations" section. Before interpreting the user's request, collect context.
 
 ### The map body
 
@@ -54,7 +54,7 @@ The whole map at low resolution, loaded once per session. Open tickets are **not
 
 ### Tickets
 
-Each ticket is a **child issue** of the map; the tracker's issue id is its identity. Its body is the question, sized to one 100K token agent session:
+Each ticket is a **child issue** of the map; the tracker's issue id is its identity. Its question is sized to one 100K token agent session:
 
 ```markdown
 ## Question
@@ -62,13 +62,13 @@ Each ticket is a **child issue** of the map; the tracker's issue id is its ident
 <the decision or investigation this ticket resolves>
 ```
 
-Each ticket carries a `wayfinder:<type>` label — one of `research`, `prototype`, `grilling`, `task` (see [Ticket Types](#ticket-types)).
+Each ticket has one type — one of `research`, `prototype`, `grilling`, `task` (see [Ticket Types](#ticket-types)).
 
-A session **claims** a ticket by assigning it to the dev driving the map, **first**, before any work, so concurrent sessions skip it. That assignee _is_ the claim: an open, unassigned ticket is unclaimed.
+A session **claims** a ticket, **first**, before any work, so concurrent sessions skip it.
 
-Blocking uses the tracker's **native** dependency relationship — essential because it renders the frontier _visually_ in the tracker's own UI, so the human sees what's takeable without opening the map. Only a tracker that lacks native blocking falls back to a body convention. A ticket is **unblocked** when every ticket blocking it is closed; the **frontier** is the open, unblocked, unclaimed children — the edge of the known.
+Blocking follows the tracker's dependency convention. A ticket is **unblocked** when every ticket blocking it is closed; the **frontier** is the open, unblocked, unclaimed children — the edge of the known.
 
-The answer isn't part of the body — it's recorded on resolution (see [Work through the map](#work-through-the-map)). Assets created while resolving a ticket are linked from the issue, not pasted in.
+The answer is recorded when the ticket closes (see [Work through the map](#work-through-the-map)). Assets created while resolving a ticket are linked from the issue, not pasted in.
 
 ## Ticket Types
 
@@ -98,11 +98,11 @@ Fog only ever gathers _toward_ the destination. The destination fixes the scope,
 
 Out-of-scope work never graduates — the frontier stops at the destination — so it returns only if the destination is redrawn, and then as a fresh effort, not a resumption.
 
-Ruling something out of scope is a scoping act, not a step on the route. When a ticket that already exists turns out to sit past the destination — mis-scoped in while charting, or exposed by a resolution — **close it** (a closed ticket is unambiguously off the frontier) and leave one line in the **Out of scope** section: the gist plus why it's out of scope, linking the closed ticket. It stays out of **Decisions so far**, which records the route actually walked — a scope boundary isn't a step on it.
+Ruling something out of scope is a scoping act, not a step on the route. When a ticket that already exists turns out to sit past the destination — mis-scoped in while charting, or exposed by a resolution — **rule it out of scope**. It stays out of **Decisions so far**, which records the route actually walked — a scope boundary isn't a step on it.
 
 ## Invocation
 
-With no idea or map in the invocation, use the collector output to summarize what is in progress and recommend what the user could do next; change nothing until they choose.
+With no idea or map in the invocation, use the collected tracker context to summarize what is in progress and recommend what the user could do next; change nothing until they choose.
 
 Two work modes remain. Either way, **never resolve more than one ticket per session** — with the exception of research tickets.
 
@@ -113,7 +113,7 @@ User invokes with a loose idea.
 1. **Name the destination.** Run a `/grilling` and `/domain-modeling` session to pin down what this map is finding its way to — the spec, decision, or change. The destination fixes the scope, so it's settled first.
 2. **Map the frontier.** Grill again, **breadth-first** this time: fan out across the whole space rather than deep on any one thread, surfacing the open decisions and the first steps takeable now. **If this surfaces no fog** — the way to the destination is already clear, the whole journey small enough for one session — you don't need a map. Stop and ask the user how they'd like to proceed.
 3. **Create the map**: Destination and Notes filled in, Decisions-so-far empty, the fog sketched into **Not yet specified**.
-4. **Create the tickets you can specify now** as child issues of the map — then wire blocking edges in a **second pass** (issues need ids before they can reference each other). Wiring sorts them into the frontier and the blocked; everything you can't yet specify stays in the fog — the **Not yet specified** section.
+4. **Create a child ticket for each question you can specify now** — then wire blocking edges in a **second pass** (issues need ids before they can reference each other). Wiring sorts them into the frontier and the blocked; everything you can't yet specify stays in the fog — the **Not yet specified** section.
 5. **Fire the research subagents.** For each `research` ticket you just created, spin up a `/research` subagent to resolve it in parallel, capturing its findings on a throwaway `research/<name>` branch with a context pointer from the ticket.
 6. Stop — charting is one session's work; it hand-resolves nothing.
 
@@ -122,9 +122,9 @@ User invokes with a loose idea.
 User invokes with an existing map. A ticket is **optional** — without one, you pick the next decision, not the user.
 
 1. Load the **map** — the low-res view, not every ticket body.
-2. Choose the ticket. If the user named one, use it. Otherwise take the first frontier ticket in order. **Claim it**: assign it to yourself before any work.
+2. Choose the ticket. If the user named one, use it. Otherwise take the first frontier ticket in order. **Claim it** before any work.
 3. Resolve it — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, use `/grilling` and `/domain-modeling`.
-4. Record the resolution: post the answer as a **resolution comment**, **close** the issue, and **append a context pointer** to the map's Decisions-so-far.
+4. **Close it.**
 5. Add newly-surfaced tickets (create-then-wire); graduate any fog the answer has made specifiable, clearing each graduated patch from **Not yet specified** so it lives only as its new ticket. If the answer reveals a ticket — this one or another — sits beyond the destination, **rule it out of scope** rather than resolving it on the route. If the decision invalidates other parts of the map, update or delete those tickets.
 
 The user may run unblocked tickets in parallel, so expect other sessions to be editing the tracker concurrently.
