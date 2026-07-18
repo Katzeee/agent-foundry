@@ -87,6 +87,14 @@ for (const plugin of catalog.plugins) {
     }
   });
 
+  await writeJson(path.join(pluginRoot, ".claude-plugin", "plugin.json"), {
+    name: plugin.name,
+    description: plugin.description,
+    author: { name: catalog.publisher.name },
+    repository: catalog.publisher.repository,
+    skills: "./skills/"
+  });
+
   marketplacePlugins.push({
     name: plugin.name,
     source: {
@@ -107,6 +115,20 @@ await writeJson(path.join(distRoot, ".agents", "plugins", "marketplace.json"), {
   plugins: marketplacePlugins
 });
 
+await writeJson(path.join(distRoot, ".claude-plugin", "marketplace.json"), {
+  $schema: "https://json.schemastore.org/claude-code-marketplace.json",
+  name: catalog.marketplace.name,
+  description: `${catalog.marketplace.displayName} plugins`,
+  owner: { name: catalog.publisher.name },
+  plugins: catalog.plugins.map((plugin) => ({
+    name: plugin.name,
+    source: `./plugins/${plugin.name}`,
+    description: plugin.description,
+    author: { name: catalog.publisher.name },
+    category: plugin.category.toLowerCase()
+  }))
+});
+
 const publishedSkills = Object.entries(catalog.skills).filter(([, config]) => config.publish).map(([name]) => name);
 const releaseReadme = `# ${catalog.marketplace.displayName}\n\nThis branch is generated from the \`source\` branch. Do not edit it directly.\n\n## Published skills\n\n${publishedSkills.map((name) => `- \`${name}\``).join("\n")}\n\n## Published plugins\n\n${catalog.plugins.map((plugin) => `- \`${plugin.name}@${plugin.version}\`: ${plugin.skills.join(", ")}`).join("\n")}\n\nDevelopment sources and build configuration live on the [\`source\` branch](${catalog.publisher.repository}/tree/source).\n`;
 await writeFile(path.join(distRoot, "README.md"), releaseReadme, "utf8");
@@ -114,7 +136,7 @@ await writeFile(path.join(distRoot, "README.md"), releaseReadme, "utf8");
 await mkdir(path.join(distRoot, ".github", "workflows"), { recursive: true });
 await cp(path.join(root, ".github", "workflows", "publish.yml"), path.join(distRoot, ".github", "workflows", "publish.yml"));
 
-const sourceCommit = process.env.GITHUB_SHA || git("rev-parse", "HEAD");
+const sourceCommit = process.env.SOURCE_COMMIT || process.env.GITHUB_SHA || git("rev-parse", "HEAD");
 const sourceDate = process.env.SOURCE_DATE_EPOCH
   ? new Date(Number(process.env.SOURCE_DATE_EPOCH) * 1000).toISOString()
   : git("show", "-s", "--format=%cI", sourceCommit);

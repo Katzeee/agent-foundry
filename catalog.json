@@ -9,11 +9,14 @@
     "repository": "https://github.com/Katzeee/xy-workflow"
   },
   "skills": {
-    "wayfinder": {
+    "code-review": {
       "publish": true
     },
+    "wayfinder": {
+      "publish": false
+    },
     "wayfinder-setup": {
-      "publish": true
+      "publish": false
     }
   },
   "plugins": [

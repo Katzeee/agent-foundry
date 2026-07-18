@@ -127,6 +127,9 @@ async function validateDist(catalog) {
   const marketplace = await json(path.join(distRoot, ".agents", "plugins", "marketplace.json"));
   if (marketplace.name !== catalog.marketplace.name) fail("generated marketplace name is stale");
   if (marketplace.plugins.length !== catalog.plugins.length) fail("generated marketplace plugin count is stale");
+  const claudeMarketplace = await json(path.join(distRoot, ".claude-plugin", "marketplace.json"));
+  if (claudeMarketplace.name !== catalog.marketplace.name) fail("generated Claude marketplace name is stale");
+  if (claudeMarketplace.plugins.length !== catalog.plugins.length) fail("generated Claude marketplace plugin count is stale");
 
   for (const [name, config] of Object.entries(catalog.skills)) {
     if (config.publish) {
@@ -140,6 +143,10 @@ async function validateDist(catalog) {
     const pluginRoot = path.join(distRoot, "plugins", plugin.name);
     const manifest = await json(path.join(pluginRoot, ".codex-plugin", "plugin.json"));
     if (manifest.name !== plugin.name || manifest.version !== plugin.version) fail(`${plugin.name} manifest is stale`);
+    const claudeManifest = await json(path.join(pluginRoot, ".claude-plugin", "plugin.json"));
+    if (claudeManifest.name !== plugin.name || claudeManifest.description !== plugin.description) {
+      fail(`${plugin.name} Claude manifest is stale`);
+    }
     for (const skill of plugin.skills) {
       await assertSameTree(path.join(root, "skills", skill), path.join(pluginRoot, "skills", skill), `${plugin.name}/${skill}`);
     }
