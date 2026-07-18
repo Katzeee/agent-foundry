@@ -1,6 +1,6 @@
-# XY Workflow source
+# Agent Foundry source
 
-This is the editable source branch for the XY Workflow skill and plugin catalog. The `main` branch is a generated, directly installable distribution and must not be edited by hand.
+This is the editable source branch for the Agent Foundry skill and plugin catalog. The `main` branch is a generated, directly installable distribution and must not be edited by hand.
 
 ## Catalog model
 

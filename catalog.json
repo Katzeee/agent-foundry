@@ -1,12 +1,12 @@
 {
   "$schema": "./catalog.schema.json",
   "marketplace": {
-    "name": "xy-workflow",
-    "displayName": "XY Workflow"
+    "name": "agent-foundry",
+    "displayName": "Agent Foundry"
   },
   "publisher": {
     "name": "Katzeee",
-    "repository": "https://github.com/Katzeee/xy-workflow"
+    "repository": "https://github.com/Katzeee/agent-foundry"
   },
   "skills": {
     "code-review": {
