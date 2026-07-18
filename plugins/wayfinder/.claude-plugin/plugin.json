@@ -1,0 +1,9 @@
+{
+  "name": "wayfinder",
+  "description": "Map large efforts as decision tickets and resolve them one step at a time.",
+  "author": {
+    "name": "Katzeee"
+  },
+  "repository": "https://github.com/Katzeee/agent-foundry",
+  "skills": "./skills/"
+}

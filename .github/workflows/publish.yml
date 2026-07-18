@@ -1,0 +1,70 @@
+name: Validate and publish marketplace
+
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Rebuild even when source is already published
+        required: false
+        type: boolean
+        default: false
+  schedule:
+    - cron: "17 10 * * *"
+      timezone: Asia/Shanghai
+
+concurrency:
+  group: marketplace-main
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: source
+          fetch-depth: 0
+      - name: Check for unpublished source
+        id: changes
+        shell: bash
+        env:
+          FORCE_PUBLISH: ${{ inputs.force || false }}
+        run: |
+          source_sha="$(git rev-parse HEAD)"
+          published_sha="$(git show origin/main:build-manifest.json 2>/dev/null | node -e "let value=''; process.stdin.on('data', chunk => value += chunk); process.stdin.on('end', () => console.log(JSON.parse(value).sourceCommit))" 2>/dev/null || true)"
+          if [[ "${FORCE_PUBLISH}" == "true" || "${source_sha}" != "${published_sha}" ]]; then
+            echo "publish=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "publish=false" >> "${GITHUB_OUTPUT}"
+            echo "source is already published"
+          fi
+          echo "source_sha=${source_sha}" >> "${GITHUB_OUTPUT}"
+      - uses: actions/setup-node@v6
+        if: steps.changes.outputs.publish == 'true'
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - if: steps.changes.outputs.publish == 'true'
+        run: npm run check
+        env:
+          SOURCE_COMMIT: ${{ steps.changes.outputs.source_sha }}
+      - name: Publish generated tree to main
+        if: steps.changes.outputs.publish == 'true'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git worktree add "${RUNNER_TEMP}/xy-workflow-main" origin/main
+          rsync -a --delete --exclude='.git' dist/ "${RUNNER_TEMP}/xy-workflow-main/"
+          cd "${RUNNER_TEMP}/xy-workflow-main"
+          git add --all
+          if git diff --cached --quiet; then
+            echo "Distribution is already current."
+            exit 0
+          fi
+          git commit -m "release: publish ${SOURCE_SHA::7}"
+          git push origin HEAD:main
+        env:
+          SOURCE_SHA: ${{ steps.changes.outputs.source_sha }}

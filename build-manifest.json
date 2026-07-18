@@ -1,0 +1,21 @@
+{
+  "sourceBranch": "source",
+  "sourceCommit": "a2b329055ebd75acd8399bd7b92b7188b7c41b2e",
+  "sourceDate": "2026-07-18T11:52:50+08:00",
+  "sourceDirty": false,
+  "files": {
+    ".agents/plugins/marketplace.json": "ffefe449e49bbfe7db4d1726083684357b5da57c28b5b304cf0be5a34f630e6d",
+    ".claude-plugin/marketplace.json": "e555b7ba003eaf8d05a6667f71713e3a757e2b0b37e943c806b6f9e1ba3ceeb1",
+    ".github/workflows/publish.yml": "4c62f5ee698c0ddeb6f5cabd02224916ae8a485e6cb3b5b7dc4f15c2e4a09365",
+    "README.md": "e0cf102c33fd7f5da02daf9190d4ee9430375023cbc967137dc6e129d4489eb5",
+    "plugins/wayfinder/.claude-plugin/plugin.json": "abef7d395727b924e11ff9f6c7c3e598c77c56f98687788a2c0b249182a6d55d",
+    "plugins/wayfinder/.codex-plugin/plugin.json": "ef1f48b43b0e179b56a9c0d2a84d1612f91a7654cd62ea5dd4c568d2c45fee95",
+    "plugins/wayfinder/skills/wayfinder-setup/SKILL.md": "8d5ff1c61a3eeb77fc10c1ee1a3c0efce051c2de0414b4966f510048fdf26c84",
+    "plugins/wayfinder/skills/wayfinder-setup/agents/openai.yaml": "6e67c87e11297f1e3046f722c9b06af65de03a0f6e423f3c32f35999e5e33c1c",
+    "plugins/wayfinder/skills/wayfinder-setup/issue-tracker.md": "9d14cfc91208c0130c282e050891ad6c93096094783b2cbafbf22bfaa649ba43",
+    "plugins/wayfinder/skills/wayfinder/SKILL.md": "43e454573a2b8d5fac40633d4a7291b16526d824bcb46b4f71aa8825f1b4fbbb",
+    "plugins/wayfinder/skills/wayfinder/agents/openai.yaml": "3e698cdff8e84d0e900d8dec535060e9e6d16d923b313eefd881e958d164e37a",
+    "plugins/wayfinder/skills/wayfinder/scripts/tracker.py": "112344809f301a5244113b24030edcbb928e857cbb676ea42109b8e50f5eb093",
+    "skills/code-review/SKILL.md": "faa6b42d1d3ff4d77f317850bcba30f8ebfc70407cd9cf7f63bb9e9285c78a5d"
+  }
+}

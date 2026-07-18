@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "agent-foundry",
+  "description": "Agent Foundry plugins",
+  "owner": {
+    "name": "Katzeee"
+  },
+  "plugins": [
+    {
+      "name": "wayfinder",
+      "source": "./plugins/wayfinder",
+      "description": "Map large efforts as decision tickets and resolve them one step at a time.",
+      "author": {
+        "name": "Katzeee"
+      },
+      "category": "productivity"
+    }
+  ]
+}
