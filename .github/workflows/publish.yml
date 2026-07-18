@@ -1,0 +1,55 @@
+name: Validate and publish marketplace
+
+on:
+  pull_request:
+    branches: [source]
+  push:
+    branches: [source]
+
+concurrency:
+  group: marketplace-main
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - run: npm run check
+
+  publish:
+    if: github.event_name == 'push'
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - run: npm run build
+      - name: Publish generated tree to main
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git worktree add "${RUNNER_TEMP}/xy-workflow-main" origin/main
+          rsync -a --delete --exclude='.git' dist/ "${RUNNER_TEMP}/xy-workflow-main/"
+          cd "${RUNNER_TEMP}/xy-workflow-main"
+          git add --all
+          if git diff --cached --quiet; then
+            echo "Distribution is already current."
+            exit 0
+          fi
+          git commit -m "release: publish ${GITHUB_SHA::7}"
+          git push origin HEAD:main

@@ -1,0 +1,37 @@
+{
+  "$schema": "./catalog.schema.json",
+  "marketplace": {
+    "name": "xy-workflow",
+    "displayName": "XY Workflow"
+  },
+  "publisher": {
+    "name": "Katzeee",
+    "repository": "https://github.com/Katzeee/xy-workflow"
+  },
+  "skills": {
+    "wayfinder": {
+      "publish": true
+    },
+    "wayfinder-setup": {
+      "publish": true
+    }
+  },
+  "plugins": [
+    {
+      "name": "wayfinder",
+      "version": "0.1.0",
+      "description": "Map large efforts as decision tickets and resolve them one step at a time.",
+      "skills": [
+        "wayfinder",
+        "wayfinder-setup"
+      ],
+      "category": "Productivity",
+      "interface": {
+        "displayName": "Wayfinder",
+        "shortDescription": "Map large efforts as decision tickets",
+        "longDescription": "Wayfinder charts work that is too large for one agent session as a shared map of decision tickets, then resolves the route one decision at a time.",
+        "defaultPrompt": "Help me chart a large effort with Wayfinder."
+      }
+    }
+  ]
+}

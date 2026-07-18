@@ -1,0 +1,15 @@
+{
+  "name": "xy-workflow-source",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "validate": "node scripts/validate.mjs",
+    "validate:dist": "node scripts/validate.mjs --dist",
+    "check": "npm run validate && npm run build && npm run validate:dist"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
