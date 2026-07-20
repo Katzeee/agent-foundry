@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Minimal local Markdown tracker for Wayfinder."""
+"""Local Markdown implementation of Wayfinder's tracker operations."""
 
 from __future__ import annotations
 
@@ -13,13 +13,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-CONFIG_PATH = Path("docs/agents/issue-tracker.md")
+CONFIG_PATH = Path("docs/agents/wayfinder/wayfinder.md")
 TRACKER_ROOT_RE = re.compile(r"^Tracker root:\s*`([^`]+)`\s*$", re.MULTILINE)
-ISSUE_FILE_RE = re.compile(r"^(\d+)(?:-([a-z0-9][a-z0-9-]*))?\.md$")
+TICKET_FILE_RE = re.compile(r"^(\d+)(?:-([a-z0-9][a-z0-9-]*))?\.md$")
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
-INTERACTIONS = {"HITL", "AFK"}
-TYPES = {"grilling", "research", "prototype", "task"}
-STATUSES = {"open", "claimed", "closed"}
+STATES = {"open", "closed"}
 MAP_HEADINGS = (
     "Destination",
     "Notes",
@@ -27,27 +25,6 @@ MAP_HEADINGS = (
     "Not yet specified",
     "Out of scope",
 )
-MAP_TEMPLATE = """# <Map title>
-
-## Destination
-
-## Notes
-
-## Decisions so far
-
-## Not yet specified
-
-## Out of scope
-"""
-ISSUE_TEMPLATE = """# <Issue title>
-
-Interaction: <HITL|AFK>
-Type: <grilling|research|prototype|task>
-Status: open
-Blocked by:
-
-## Question
-"""
 
 
 class TrackerError(Exception):
@@ -55,14 +32,14 @@ class TrackerError(Exception):
 
 
 @dataclass
-class Issue:
+class Ticket:
     path: Path
     number: int
     number_text: str
     title: str
-    interaction: str
-    issue_type: str
-    status: str
+    ticket_type: str
+    state: str
+    claimed_by: str
     blocked_by: list[int]
     question: str
     answer: str | None
@@ -74,7 +51,7 @@ class MapData:
     path: Path
     title: str
     destination: str
-    issues: list[Issue]
+    tickets: list[Ticket]
     updated_at: float
 
 
@@ -146,6 +123,20 @@ def read_text(path: Path) -> str:
         raise TrackerError(f"Could not read {path}: {exc}") from exc
 
 
+def write_text(path: Path, content: str) -> None:
+    """Replace one tracker file without exposing a partially-written document."""
+    temporary = path.with_name(f".{path.name}.tmp-{os.getpid()}")
+    try:
+        temporary.write_text(content, encoding="utf-8")
+        os.replace(temporary, path)
+    except OSError as exc:
+        try:
+            temporary.unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise TrackerError(f"Could not write {path}: {exc}") from exc
+
+
 def first_h1(content: str) -> str:
     match = re.search(r"^#\s+(.+?)\s*$", content, re.MULTILINE)
     return match.group(1).strip() if match else ""
@@ -163,6 +154,26 @@ def section(content: str, heading: str) -> str | None:
 def field(content: str, name: str) -> str | None:
     match = re.search(rf"^{re.escape(name)}:[ \t]*(.*?)[ \t]*$", content, re.MULTILINE)
     return match.group(1).strip() if match else None
+
+
+def replace_field(content: str, name: str, value: str) -> str:
+    pattern = re.compile(rf"^{re.escape(name)}:[ \t]*.*$", re.MULTILINE)
+    if not pattern.search(content):
+        raise TrackerError(f"Ticket is missing `{name}:`.")
+    return pattern.sub(f"{name}: {value}", content, count=1)
+
+
+def append_section_item(content: str, heading: str, item: str) -> str:
+    pattern = re.compile(
+        rf"(^##\s+{re.escape(heading)}\s*$\n)(.*?)(?=^##\s+|\Z)",
+        re.MULTILINE | re.DOTALL,
+    )
+    match = pattern.search(content)
+    if not match:
+        raise TrackerError(f"Map is missing `## {heading}`.")
+    existing = match.group(2).strip()
+    body = f"\n{existing}\n\n{item}\n\n" if existing else f"\n{item}\n\n"
+    return content[: match.start(2)] + body + content[match.end(2) :]
 
 
 def is_placeholder(value: str | None) -> bool:
@@ -186,11 +197,11 @@ def parse_blockers(raw: str | None) -> tuple[list[int], list[str]]:
     return blockers, errors
 
 
-def parse_issue(path: Path) -> tuple[Issue | None, list[str]]:
+def parse_ticket(path: Path) -> tuple[Ticket | None, list[str]]:
     errors: list[str] = []
-    match = ISSUE_FILE_RE.match(path.name)
+    match = TICKET_FILE_RE.match(path.name)
     if not match:
-        return None, ["filename must start with a numeric Issue ID"]
+        return None, ["filename must start with a numeric Ticket ID"]
 
     try:
         content = read_text(path)
@@ -199,42 +210,47 @@ def parse_issue(path: Path) -> tuple[Issue | None, list[str]]:
 
     number_text = match.group(1)
     title = first_h1(content)
-    interaction = field(content, "Interaction") or ""
-    issue_type = field(content, "Type") or ""
-    status = field(content, "Status") or ""
-    blocked_by, blocker_errors = parse_blockers(field(content, "Blocked by"))
+    raw_ticket_type = field(content, "Type")
+    raw_state = field(content, "State")
+    raw_claimed_by = field(content, "Claimed by")
+    raw_blocked_by = field(content, "Blocked by")
+    state = raw_state or ""
+    claimed_by = raw_claimed_by or ""
+    blocked_by, blocker_errors = parse_blockers(raw_blocked_by)
     question = section(content, "Question")
     answer = section(content, "Answer")
 
     if is_placeholder(title):
-        errors.append("missing Issue title")
-    if interaction not in INTERACTIONS:
-        errors.append(f"Interaction must be one of: {', '.join(sorted(INTERACTIONS))}")
-    if issue_type not in TYPES:
-        errors.append(f"Type must be one of: {', '.join(sorted(TYPES))}")
-    if status not in STATUSES:
-        errors.append(f"Status must be one of: {', '.join(sorted(STATUSES))}")
+        errors.append("missing Ticket title")
+    if is_placeholder(raw_ticket_type):
+        errors.append("missing Type")
+    if raw_claimed_by is None:
+        errors.append("missing `Claimed by:` field")
+    if raw_blocked_by is None:
+        errors.append("missing `Blocked by:` field")
+    if state not in STATES:
+        errors.append(f"State must be one of: {', '.join(sorted(STATES))}")
     if is_placeholder(question):
         errors.append("missing Question")
-    if status == "closed" and is_placeholder(answer):
-        errors.append("closed Issue is missing Answer")
+    if state == "closed" and is_placeholder(answer):
+        errors.append("closed Ticket is missing Answer")
     errors.extend(blocker_errors)
     if len(blocked_by) != len(set(blocked_by)):
-        errors.append("Blocked by contains duplicate Issue IDs")
+        errors.append("Blocked by contains duplicate Ticket IDs")
 
-    issue = Issue(
+    ticket = Ticket(
         path=path,
         number=int(number_text),
         number_text=number_text,
         title=title,
-        interaction=interaction,
-        issue_type=issue_type,
-        status=status,
+        ticket_type=raw_ticket_type or "",
+        state=state,
+        claimed_by=claimed_by,
         blocked_by=blocked_by,
         question=question or "",
         answer=answer,
     )
-    return issue, errors
+    return ticket, errors
 
 
 def parse_map(map_dir: Path) -> tuple[MapData | None, list[str]]:
@@ -255,49 +271,49 @@ def parse_map(map_dir: Path) -> tuple[MapData | None, list[str]]:
         if section(content, heading) is None:
             errors.append(f"map.md: missing `## {heading}`")
 
-    issues: list[Issue] = []
+    tickets: list[Ticket] = []
     issues_dir = map_dir / "issues"
-    issue_files = sorted(issues_dir.glob("*.md")) if issues_dir.is_dir() else []
+    ticket_files = sorted(issues_dir.glob("*.md")) if issues_dir.is_dir() else []
     seen_numbers: dict[int, Path] = {}
-    for issue_path in issue_files:
-        issue, issue_errors = parse_issue(issue_path)
-        for message in issue_errors:
-            errors.append(f"{issue_path.relative_to(map_dir).as_posix()}: {message}")
-        if issue is None:
+    for ticket_path in ticket_files:
+        ticket, ticket_errors = parse_ticket(ticket_path)
+        for message in ticket_errors:
+            errors.append(f"issues/{ticket_path.name}: {message}")
+        if ticket is None:
             continue
-        if issue.number in seen_numbers:
+        if ticket.number in seen_numbers:
             errors.append(
-                f"{issue_path.relative_to(map_dir).as_posix()}: duplicate Issue ID "
-                f"{issue.number_text} also used by {seen_numbers[issue.number].name}"
+                f"issues/{ticket_path.name}: duplicate Ticket ID "
+                f"{ticket.number_text} also used by {seen_numbers[ticket.number].name}"
             )
         else:
-            seen_numbers[issue.number] = issue_path
-        issues.append(issue)
+            seen_numbers[ticket.number] = ticket_path
+        tickets.append(ticket)
 
-    issue_by_number = {issue.number: issue for issue in issues}
-    for issue in issues:
-        for blocker in issue.blocked_by:
-            if blocker == issue.number:
-                errors.append(f"issues/{issue.path.name}: Issue cannot block itself")
-            elif blocker not in issue_by_number:
-                errors.append(f"issues/{issue.path.name}: blocker {blocker:02d} does not exist")
+    ticket_by_number = {ticket.number: ticket for ticket in tickets}
+    for ticket in tickets:
+        for blocker in ticket.blocked_by:
+            if blocker == ticket.number:
+                errors.append(f"issues/{ticket.path.name}: Ticket cannot block itself")
+            elif blocker not in ticket_by_number:
+                errors.append(f"issues/{ticket.path.name}: blocker {blocker:02d} does not exist")
 
-    errors.extend(validate_dag(issues))
+    errors.extend(validate_dag(tickets))
 
-    tracked_files = [map_path, *issue_files]
+    tracked_files = [map_path, *ticket_files]
     updated_at = max((path.stat().st_mtime for path in tracked_files), default=map_path.stat().st_mtime)
     return MapData(
         directory=map_dir,
         path=map_path,
         title=title,
         destination=destination or "",
-        issues=issues,
+        tickets=tickets,
         updated_at=updated_at,
     ), errors
 
 
-def validate_dag(issues: list[Issue]) -> list[str]:
-    graph = {issue.number: issue.blocked_by for issue in issues}
+def validate_dag(tickets: list[Ticket]) -> list[str]:
+    graph = {ticket.number: ticket.blocked_by for ticket in tickets}
     visiting: set[int] = set()
     visited: set[int] = set()
     errors: list[str] = []
@@ -347,11 +363,48 @@ def compact_text(value: str) -> str:
     return " ".join(value.split())
 
 
-def issue_is_unblocked(issue: Issue, issue_by_number: dict[int, Issue]) -> bool:
+def ticket_is_unblocked(ticket: Ticket, ticket_by_number: dict[int, Ticket]) -> bool:
     return all(
-        blocker in issue_by_number and issue_by_number[blocker].status == "closed"
-        for blocker in issue.blocked_by
+        blocker in ticket_by_number and ticket_by_number[blocker].state == "closed"
+        for blocker in ticket.blocked_by
     )
+
+
+def require_valid_map(map_dir: Path) -> MapData:
+    map_data, errors = parse_map(map_dir)
+    if map_data is None:
+        raise TrackerError(f"Could not read Map: {map_dir.name}")
+    if errors:
+        rendered = "\n".join(f"- {message}" for message in errors)
+        raise TrackerError(f"Map `{map_dir.name}` is invalid:\n{rendered}")
+    return map_data
+
+
+def resolve_map_dir(tracker_root: Path, map_ref: str) -> Path:
+    candidate = (tracker_root / map_ref).resolve()
+    try:
+        candidate.relative_to(tracker_root)
+    except ValueError as exc:
+        raise TrackerError("Map reference must stay inside the Tracker root.") from exc
+    if not candidate.is_dir() or not (candidate / "map.md").is_file():
+        raise TrackerError(f"Map not found: {map_ref}")
+    return candidate
+
+
+def resolve_ticket(map_data: MapData, ticket_ref: str) -> Ticket:
+    if ticket_ref.isdigit():
+        number = int(ticket_ref)
+        matches = [ticket for ticket in map_data.tickets if ticket.number == number]
+    else:
+        matches = [ticket for ticket in map_data.tickets if ticket.path.name == ticket_ref]
+    if len(matches) != 1:
+        raise TrackerError(f"Ticket not found: {ticket_ref}")
+    return matches[0]
+
+
+def require_open(ticket: Ticket) -> None:
+    if ticket.state != "open":
+        raise TrackerError(f"Ticket {ticket.number_text} is already closed.")
 
 
 def command_collect(args: argparse.Namespace) -> int:
@@ -367,17 +420,25 @@ def command_collect(args: argparse.Namespace) -> int:
         print("Order: latest activity first")
 
     for map_data in maps:
-        issue_by_number = {issue.number: issue for issue in map_data.issues}
+        ticket_by_number = {ticket.number: ticket for ticket in map_data.tickets}
         frontier = [
-            issue
-            for issue in map_data.issues
-            if issue.status == "open" and issue_is_unblocked(issue, issue_by_number)
+            ticket
+            for ticket in map_data.tickets
+            if ticket.state == "open"
+            and not ticket.claimed_by
+            and ticket_is_unblocked(ticket, ticket_by_number)
         ]
-        claimed = [issue for issue in map_data.issues if issue.status == "claimed"]
+        claimed = [
+            ticket
+            for ticket in map_data.tickets
+            if ticket.state == "open" and ticket.claimed_by
+        ]
         blocked = [
-            issue
-            for issue in map_data.issues
-            if issue.status == "open" and not issue_is_unblocked(issue, issue_by_number)
+            ticket
+            for ticket in map_data.tickets
+            if ticket.state == "open"
+            and not ticket.claimed_by
+            and not ticket_is_unblocked(ticket, ticket_by_number)
         ]
         active_count = len(frontier) + len(blocked) + len(claimed)
         updated = datetime.fromtimestamp(map_data.updated_at, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -391,23 +452,26 @@ def command_collect(args: argparse.Namespace) -> int:
         print(f"Destination: {compact_text(map_data.destination) or '(missing)'}")
         print()
         print(
-            f"Open issues: {active_count} — {len(frontier)} frontier, "
+            f"Open tickets: {active_count} — {len(frontier)} frontier, "
             f"{len(blocked)} blocked, {len(claimed)} claimed"
         )
         print()
         print("### Frontier")
         print()
         if frontier:
-            for issue in sorted(frontier, key=lambda item: item.number):
-                print(f"- `{issue.number_text}` {issue.title} — {issue.interaction}")
+            for ticket in sorted(frontier, key=lambda item: item.number):
+                print(f"- `{ticket.number_text}` {ticket.title} — {ticket.ticket_type}")
         else:
             print("None.")
         print()
         print("### Claimed")
         print()
         if claimed:
-            for issue in sorted(claimed, key=lambda item: item.number):
-                print(f"- `{issue.number_text}` {issue.title} — {issue.interaction}")
+            for ticket in sorted(claimed, key=lambda item: item.number):
+                print(
+                    f"- `{ticket.number_text}` {ticket.title} — "
+                    f"{ticket.ticket_type}; claimed by {ticket.claimed_by}"
+                )
         else:
             print("None.")
 
@@ -436,38 +500,224 @@ def command_create_map(args: argparse.Namespace) -> int:
     map_dir.mkdir(parents=True)
     (map_dir / "issues").mkdir()
     map_path = map_dir / "map.md"
-    map_path.write_text(MAP_TEMPLATE, encoding="utf-8")
+    content = f"""# {args.title.strip()}
+
+## Destination
+
+{args.destination.strip()}
+
+## Notes
+
+{args.notes.strip()}
+
+## Decisions so far
+
+## Not yet specified
+
+{args.not_yet_specified.strip()}
+
+## Out of scope
+
+{args.out_of_scope.strip()}
+"""
+    write_text(map_path, content)
     print(repo_relative(map_path, repo_root))
     return 0
 
 
-def resolve_map_dir(tracker_root: Path, map_ref: str) -> Path:
-    candidate = (tracker_root / map_ref).resolve()
-    try:
-        candidate.relative_to(tracker_root)
-    except ValueError as exc:
-        raise TrackerError("Map reference must stay inside the Tracker root.") from exc
-    if not candidate.is_dir() or not (candidate / "map.md").is_file():
-        raise TrackerError(f"Map not found: {map_ref}")
-    return candidate
-
-
-def command_create_issue(args: argparse.Namespace) -> int:
+def command_create_ticket(args: argparse.Namespace) -> int:
     repo_root = find_repo_root()
     tracker_root = load_tracker_root(repo_root)
     map_dir = resolve_map_dir(tracker_root, args.map)
-    slug = validate_slug(args.slug or "issue")
+    require_valid_map(map_dir)
+    slug = validate_slug(args.slug)
+    ticket_type = args.ticket_type.strip()
+    if not ticket_type:
+        raise TrackerError("Ticket Type must not be empty.")
     issues_dir = map_dir / "issues"
     issues_dir.mkdir(exist_ok=True)
     numbers = []
     for path in issues_dir.glob("*.md"):
-        match = ISSUE_FILE_RE.match(path.name)
+        match = TICKET_FILE_RE.match(path.name)
         if match:
             numbers.append(int(match.group(1)))
     number = max(numbers, default=0) + 1
     issue_path = issues_dir / f"{number:02d}-{slug}.md"
-    issue_path.write_text(ISSUE_TEMPLATE, encoding="utf-8")
+    content = f"""# {args.title.strip()}
+
+Type: {ticket_type}
+State: open
+Claimed by:
+Blocked by:
+
+## Question
+
+{args.question.strip()}
+"""
+    write_text(issue_path, content)
     print(repo_relative(issue_path, repo_root))
+    return 0
+
+
+def command_add_blocker(args: argparse.Namespace) -> int:
+    repo_root = find_repo_root()
+    tracker_root = load_tracker_root(repo_root)
+    map_dir = resolve_map_dir(tracker_root, args.map)
+    map_data = require_valid_map(map_dir)
+    ticket = resolve_ticket(map_data, args.ticket)
+    blocker = resolve_ticket(map_data, args.blocker)
+    require_open(ticket)
+    if blocker.number == ticket.number:
+        raise TrackerError("A Ticket cannot block itself.")
+    if blocker.number in ticket.blocked_by:
+        raise TrackerError(
+            f"Ticket {ticket.number_text} is already blocked by {blocker.number_text}."
+        )
+
+    ticket.blocked_by.append(blocker.number)
+    dag_errors = validate_dag(map_data.tickets)
+    if dag_errors:
+        raise TrackerError(dag_errors[0])
+    content = read_text(ticket.path)
+    blockers = ", ".join(f"{number:02d}" for number in ticket.blocked_by)
+    write_text(ticket.path, replace_field(content, "Blocked by", blockers))
+    print(repo_relative(ticket.path, repo_root))
+    return 0
+
+
+def command_remove_blocker(args: argparse.Namespace) -> int:
+    repo_root = find_repo_root()
+    tracker_root = load_tracker_root(repo_root)
+    map_dir = resolve_map_dir(tracker_root, args.map)
+    map_data = require_valid_map(map_dir)
+    ticket = resolve_ticket(map_data, args.ticket)
+    blocker = resolve_ticket(map_data, args.blocker)
+    require_open(ticket)
+    if blocker.number not in ticket.blocked_by:
+        raise TrackerError(
+            f"Ticket {ticket.number_text} is not blocked by {blocker.number_text}."
+        )
+    remaining = [number for number in ticket.blocked_by if number != blocker.number]
+    content = read_text(ticket.path)
+    blockers = ", ".join(f"{number:02d}" for number in remaining)
+    write_text(ticket.path, replace_field(content, "Blocked by", blockers))
+    print(repo_relative(ticket.path, repo_root))
+    return 0
+
+
+def default_actor() -> str:
+    return (
+        os.environ.get("WAYFINDER_ACTOR")
+        or os.environ.get("USERNAME")
+        or os.environ.get("USER")
+        or "local-agent"
+    )
+
+
+def command_claim_ticket(args: argparse.Namespace) -> int:
+    repo_root = find_repo_root()
+    tracker_root = load_tracker_root(repo_root)
+    map_dir = resolve_map_dir(tracker_root, args.map)
+    map_data = require_valid_map(map_dir)
+    ticket = resolve_ticket(map_data, args.ticket)
+    require_open(ticket)
+    if ticket.claimed_by:
+        raise TrackerError(
+            f"Ticket {ticket.number_text} is already claimed by {ticket.claimed_by}."
+        )
+    ticket_by_number = {item.number: item for item in map_data.tickets}
+    if not ticket_is_unblocked(ticket, ticket_by_number):
+        raise TrackerError(f"Ticket {ticket.number_text} is blocked and cannot be claimed.")
+    actor = (args.actor or default_actor()).strip()
+    if not actor:
+        raise TrackerError("Claim actor must not be empty.")
+    content = read_text(ticket.path)
+    write_text(ticket.path, replace_field(content, "Claimed by", actor))
+    print(repo_relative(ticket.path, repo_root))
+    return 0
+
+
+def command_release_ticket(args: argparse.Namespace) -> int:
+    repo_root = find_repo_root()
+    tracker_root = load_tracker_root(repo_root)
+    map_dir = resolve_map_dir(tracker_root, args.map)
+    map_data = require_valid_map(map_dir)
+    ticket = resolve_ticket(map_data, args.ticket)
+    require_open(ticket)
+    if not ticket.claimed_by:
+        raise TrackerError(f"Ticket {ticket.number_text} is not claimed.")
+    if args.actor and args.actor != ticket.claimed_by:
+        raise TrackerError(
+            f"Ticket {ticket.number_text} is claimed by {ticket.claimed_by}, not {args.actor}."
+        )
+    content = read_text(ticket.path)
+    write_text(ticket.path, replace_field(content, "Claimed by", ""))
+    print(repo_relative(ticket.path, repo_root))
+    return 0
+
+
+def close_ticket(
+    map_dir: Path,
+    ticket: Ticket,
+    *,
+    answer: str,
+    gist: str,
+    index_heading: str,
+) -> None:
+    require_open(ticket)
+    if not ticket.claimed_by:
+        raise TrackerError(f"Ticket {ticket.number_text} must be claimed before it can be closed.")
+    if not answer.strip():
+        raise TrackerError("Answer must not be empty.")
+    if not gist.strip():
+        raise TrackerError("Gist must not be empty.")
+
+    ticket_content = read_text(ticket.path).rstrip()
+    ticket_content = replace_field(ticket_content, "State", "closed")
+    ticket_content = f"{ticket_content}\n\n## Answer\n\n{answer.strip()}\n"
+    relative_link = ticket.path.relative_to(map_dir).as_posix()
+    pointer = f"- [{ticket.title}]({relative_link}) — {gist.strip()}"
+    map_path = map_dir / "map.md"
+    map_content = append_section_item(read_text(map_path), index_heading, pointer)
+
+    # The ticket is written first so a crash cannot expose a decision pointer
+    # whose linked ticket still appears open. Validation can surface a missing
+    # index update if a later semantic validator chooses to enforce it.
+    write_text(ticket.path, ticket_content)
+    write_text(map_path, map_content)
+
+
+def command_resolve_ticket(args: argparse.Namespace) -> int:
+    repo_root = find_repo_root()
+    tracker_root = load_tracker_root(repo_root)
+    map_dir = resolve_map_dir(tracker_root, args.map)
+    map_data = require_valid_map(map_dir)
+    ticket = resolve_ticket(map_data, args.ticket)
+    close_ticket(
+        map_dir,
+        ticket,
+        answer=args.answer,
+        gist=args.gist,
+        index_heading="Decisions so far",
+    )
+    print(repo_relative(ticket.path, repo_root))
+    return 0
+
+
+def command_exclude_ticket(args: argparse.Namespace) -> int:
+    repo_root = find_repo_root()
+    tracker_root = load_tracker_root(repo_root)
+    map_dir = resolve_map_dir(tracker_root, args.map)
+    map_data = require_valid_map(map_dir)
+    ticket = resolve_ticket(map_data, args.ticket)
+    close_ticket(
+        map_dir,
+        ticket,
+        answer=args.reason,
+        gist=args.gist,
+        index_heading="Out of scope",
+    )
+    print(repo_relative(ticket.path, repo_root))
     return 0
 
 
@@ -501,19 +751,75 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Wayfinder local Markdown tracker")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    collect_parser = subparsers.add_parser("collect", help="Print low-resolution context for every Map")
+    collect_parser = subparsers.add_parser(
+        "collect", help="Print the low-resolution index of every Map"
+    )
     collect_parser.set_defaults(handler=command_collect)
 
-    map_parser = subparsers.add_parser("create-map", help="Create an empty Map skeleton")
+    map_parser = subparsers.add_parser("create-map", help="Create a Map")
     map_parser.add_argument("slug", help="Map directory slug")
+    map_parser.add_argument("--title", required=True, help="Map title")
+    map_parser.add_argument("--destination", required=True, help="Map destination")
+    map_parser.add_argument("--notes", default="", help="Standing notes")
+    map_parser.add_argument(
+        "--not-yet-specified", default="", help="Initial in-scope fog"
+    )
+    map_parser.add_argument("--out-of-scope", default="", help="Initial scope exclusions")
     map_parser.set_defaults(handler=command_create_map)
 
-    issue_parser = subparsers.add_parser("create-issue", help="Create an empty Issue skeleton")
-    issue_parser.add_argument("map", help="Map directory name")
-    issue_parser.add_argument("slug", nargs="?", help="Issue filename slug (default: issue)")
-    issue_parser.set_defaults(handler=command_create_issue)
+    ticket_parser = subparsers.add_parser("create-ticket", help="Create a child Ticket")
+    ticket_parser.add_argument("map", help="Map directory name")
+    ticket_parser.add_argument("slug", help="Ticket filename slug")
+    ticket_parser.add_argument("--title", required=True, help="Ticket title")
+    ticket_parser.add_argument(
+        "--type", dest="ticket_type", required=True, help="Persisted Ticket Type name"
+    )
+    ticket_parser.add_argument("--question", required=True, help="Question the Ticket resolves")
+    ticket_parser.set_defaults(handler=command_create_ticket)
 
-    validate_parser = subparsers.add_parser("validate", help="Validate Markdown structure, enums, and blocking DAG")
+    blocker_parser = subparsers.add_parser("add-blocker", help="Add a blocking edge")
+    blocker_parser.add_argument("map")
+    blocker_parser.add_argument("ticket")
+    blocker_parser.add_argument("blocker")
+    blocker_parser.set_defaults(handler=command_add_blocker)
+
+    unblock_parser = subparsers.add_parser("remove-blocker", help="Remove a blocking edge")
+    unblock_parser.add_argument("map")
+    unblock_parser.add_argument("ticket")
+    unblock_parser.add_argument("blocker")
+    unblock_parser.set_defaults(handler=command_remove_blocker)
+
+    claim_parser = subparsers.add_parser("claim-ticket", help="Claim a frontier Ticket")
+    claim_parser.add_argument("map")
+    claim_parser.add_argument("ticket")
+    claim_parser.add_argument("--actor", help="Claim owner (default: local environment user)")
+    claim_parser.set_defaults(handler=command_claim_ticket)
+
+    release_parser = subparsers.add_parser("release-ticket", help="Release a claimed Ticket")
+    release_parser.add_argument("map")
+    release_parser.add_argument("ticket")
+    release_parser.add_argument("--actor", help="Require this actor to own the claim")
+    release_parser.set_defaults(handler=command_release_ticket)
+
+    resolve_parser = subparsers.add_parser("resolve-ticket", help="Resolve a claimed Ticket")
+    resolve_parser.add_argument("map")
+    resolve_parser.add_argument("ticket")
+    resolve_parser.add_argument("--answer", required=True)
+    resolve_parser.add_argument("--gist", required=True)
+    resolve_parser.set_defaults(handler=command_resolve_ticket)
+
+    exclude_parser = subparsers.add_parser(
+        "exclude-ticket", help="Close a claimed Ticket as out of scope"
+    )
+    exclude_parser.add_argument("map")
+    exclude_parser.add_argument("ticket")
+    exclude_parser.add_argument("--reason", required=True)
+    exclude_parser.add_argument("--gist", required=True)
+    exclude_parser.set_defaults(handler=command_exclude_ticket)
+
+    validate_parser = subparsers.add_parser(
+        "validate", help="Validate local tracker structure and the blocking DAG"
+    )
     validate_parser.add_argument("map", nargs="?", help="Validate one Map (default: every Map)")
     validate_parser.set_defaults(handler=command_validate)
     return parser
