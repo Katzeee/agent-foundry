@@ -6,17 +6,21 @@ Each map lives at `<tracker-root>/<map>/map.md`; its child tickets live at `<tra
 
 ## Wayfinding operations
 
-- **Collect context**: run `python skills/wayfinder/scripts/tracker.py collect`. It creates the Tracker root if needed and prints every map at low resolution, newest activity first. Activity is the latest modification of the map or any of its tickets; frontier tickets are ordered by number.
-- **Create map**: run `python skills/wayfinder/scripts/tracker.py create-map <slug>`, then fill the generated `map.md`.
-- **Create child ticket**: run `python skills/wayfinder/scripts/tracker.py create-issue <map> [slug]`, then fill the generated ticket.
-- **Wire blocking**: set `Blocked by: NN, NN`. Blockers are ticket numbers from the same map.
-- **Claim**: set `Status: claimed`. In this local tracker, that status is the claim; an `open` ticket is unclaimed.
-- **Close**: append `## Answer`, set `Status: closed`, then append `- [<ticket title>](<relative link>) — <one-line gist>` to the map's **Decisions so far** section.
-- **Rule out of scope**: append `## Answer` with the reason, set `Status: closed`, and append a linked gist with the reason to the map's **Out of scope** section. Do not add it to **Decisions so far**.
-- **Validate**: run `python skills/wayfinder/scripts/tracker.py validate [map]` after editing Tracker files; repair every reported error.
+- **Collect context**: run `python skills/wayfinder/scripts/tracker.py collect`. It creates the Tracker root if needed and prints a low-resolution index across all maps, newest activity first. Choose a map from that index, then read its `map.md`. Frontier tickets are ordered by number.
+- **Read map**: read `<tracker-root>/<map>/map.md` after choosing a map from the collected index.
+- **Read ticket**: read `<tracker-root>/<map>/issues/NN-<slug>.md` when a ticket's question, answer, or other detail is needed.
+- **Create map**: run `python skills/wayfinder/scripts/tracker.py create-map <slug> --title "<title>" --destination "<destination>" [--notes "<notes>"] [--not-yet-specified "<fog>"] [--out-of-scope "<scope exclusions>"]`.
+- **Create child ticket**: run `python skills/wayfinder/scripts/tracker.py create-ticket <map> <slug> --title "<title>" --question "<question>"`.
+- **Wire blocking**: run `python skills/wayfinder/scripts/tracker.py add-blocker <map> <ticket> <blocker>`. Both ticket references are numbers from the same map. Use `remove-blocker` with the same arguments to remove an edge.
+- **Claim**: run `python skills/wayfinder/scripts/tracker.py claim-ticket <map> <ticket> [--actor <name>]` as the session's first write. The ticket must be open, unclaimed, and unblocked. Use `release-ticket` to relinquish a claim without closing the ticket.
+- **Resolve**: run `python skills/wayfinder/scripts/tracker.py resolve-ticket <map> <ticket> --answer "<answer>" --gist "<one-line gist>"`. The command records the answer, closes the ticket, and adds its linked gist to the map's **Decisions so far**.
+- **Rule out of scope**: run `python skills/wayfinder/scripts/tracker.py exclude-ticket <map> <ticket> --reason "<reason>" --gist "<one-line gist>"`. The command records the reason, closes the ticket, and adds its linked gist to the map's **Out of scope**. It does not add the ticket to **Decisions so far**.
+- **Validate**: run `python skills/wayfinder/scripts/tracker.py validate [map]` after a sequence of Tracker operations; repair every reported error.
 
 Ticket fields:
 
-- `Interaction`: `HITL` or `AFK`
-- `Type`: `grilling`, `research`, `prototype`, or `task`
-- `Status`: `open`, `claimed`, or `closed`
+- `State`: `open` or `closed`
+- `Claimed by`: empty when unclaimed; otherwise the claim owner
+- `Blocked by`: comma-separated ticket numbers from the same map
+
+`State` and `Claimed by` are independent: claiming an open ticket does not create a third lifecycle state. The frontier is derived from open tickets that have no claim and whose blockers are all closed.
