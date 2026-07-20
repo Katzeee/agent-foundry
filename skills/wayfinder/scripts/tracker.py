@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
-CONFIG_PATH = Path("docs/agents/issue-tracker.md")
+CONFIG_PATH = Path("docs/agents/wayfinder/wayfinder.md")
 TRACKER_ROOT_RE = re.compile(r"^Tracker root:\s*`([^`]+)`\s*$", re.MULTILINE)
 TICKET_FILE_RE = re.compile(r"^(\d+)(?:-([a-z0-9][a-z0-9-]*))?\.md$")
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
@@ -37,6 +37,7 @@ class Ticket:
     number: int
     number_text: str
     title: str
+    ticket_type: str
     state: str
     claimed_by: str
     blocked_by: list[int]
@@ -209,6 +210,7 @@ def parse_ticket(path: Path) -> tuple[Ticket | None, list[str]]:
 
     number_text = match.group(1)
     title = first_h1(content)
+    raw_ticket_type = field(content, "Type")
     raw_state = field(content, "State")
     raw_claimed_by = field(content, "Claimed by")
     raw_blocked_by = field(content, "Blocked by")
@@ -220,6 +222,8 @@ def parse_ticket(path: Path) -> tuple[Ticket | None, list[str]]:
 
     if is_placeholder(title):
         errors.append("missing Ticket title")
+    if is_placeholder(raw_ticket_type):
+        errors.append("missing Type")
     if raw_claimed_by is None:
         errors.append("missing `Claimed by:` field")
     if raw_blocked_by is None:
@@ -239,6 +243,7 @@ def parse_ticket(path: Path) -> tuple[Ticket | None, list[str]]:
         number=int(number_text),
         number_text=number_text,
         title=title,
+        ticket_type=raw_ticket_type or "",
         state=state,
         claimed_by=claimed_by,
         blocked_by=blocked_by,
@@ -455,7 +460,7 @@ def command_collect(args: argparse.Namespace) -> int:
         print()
         if frontier:
             for ticket in sorted(frontier, key=lambda item: item.number):
-                print(f"- `{ticket.number_text}` {ticket.title}")
+                print(f"- `{ticket.number_text}` {ticket.title} — {ticket.ticket_type}")
         else:
             print("None.")
         print()
@@ -464,7 +469,8 @@ def command_collect(args: argparse.Namespace) -> int:
         if claimed:
             for ticket in sorted(claimed, key=lambda item: item.number):
                 print(
-                    f"- `{ticket.number_text}` {ticket.title} — claimed by {ticket.claimed_by}"
+                    f"- `{ticket.number_text}` {ticket.title} — "
+                    f"{ticket.ticket_type}; claimed by {ticket.claimed_by}"
                 )
         else:
             print("None.")
@@ -525,6 +531,9 @@ def command_create_ticket(args: argparse.Namespace) -> int:
     map_dir = resolve_map_dir(tracker_root, args.map)
     require_valid_map(map_dir)
     slug = validate_slug(args.slug)
+    ticket_type = args.ticket_type.strip()
+    if not ticket_type:
+        raise TrackerError("Ticket Type must not be empty.")
     issues_dir = map_dir / "issues"
     issues_dir.mkdir(exist_ok=True)
     numbers = []
@@ -536,6 +545,7 @@ def command_create_ticket(args: argparse.Namespace) -> int:
     issue_path = issues_dir / f"{number:02d}-{slug}.md"
     content = f"""# {args.title.strip()}
 
+Type: {ticket_type}
 State: open
 Claimed by:
 Blocked by:
@@ -761,6 +771,9 @@ def build_parser() -> argparse.ArgumentParser:
     ticket_parser.add_argument("map", help="Map directory name")
     ticket_parser.add_argument("slug", help="Ticket filename slug")
     ticket_parser.add_argument("--title", required=True, help="Ticket title")
+    ticket_parser.add_argument(
+        "--type", dest="ticket_type", required=True, help="Persisted Ticket Type name"
+    )
     ticket_parser.add_argument("--question", required=True, help="Question the Ticket resolves")
     ticket_parser.set_defaults(handler=command_create_ticket)
 

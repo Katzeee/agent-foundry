@@ -14,9 +14,6 @@
     },
     "wayfinder": {
       "publish": false
-    },
-    "wayfinder-setup": {
-      "publish": false
     }
   },
   "plugins": [
@@ -25,8 +22,7 @@
       "version": "0.1.0",
       "description": "Map large efforts as decision tickets and resolve them one step at a time.",
       "skills": [
-        "wayfinder",
-        "wayfinder-setup"
+        "wayfinder"
       ],
       "category": "Productivity",
       "interface": {

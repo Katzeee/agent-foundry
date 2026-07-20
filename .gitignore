@@ -1,2 +1,3 @@
 _local/
 dist/
+__pycache__/

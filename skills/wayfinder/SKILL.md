@@ -21,7 +21,7 @@ The map is the canonical tracker artifact for an effort. Its tickets are childre
 
 The map is an **index**, not a store. It lists the decisions made and points at the tickets that hold their detail; a decision lives in exactly one place — its ticket — so the map never restates it, only gists it and links.
 
-**Where the map, its child tickets, blocking, and frontier queries physically live is tracker-specific.** Ensure `docs/agents/issue-tracker.md` is usable — run `/wayfinder-setup` if not — and consult its "Wayfinding operations" section. Before interpreting the user's request, collect the tracker-wide map index as specified there.
+**Where the map, its child tickets, blocking, and frontier queries physically live is tracker-specific.** Run the bundled [setup validator](scripts/validate_setup.py) before loading repository-local configuration. If it fails, follow [setup](references/setup.md) and rerun it. Then consult the configured Wayfinding methods, Tracker operations, and Ticket Types before interpreting the user's request, and collect the tracker-wide map index.
 
 ### The map body
 
@@ -61,22 +61,13 @@ Each ticket is a map child identified by the tracker. Its question is sized to o
 <the decision or investigation this ticket resolves>
 ```
 
-Each ticket has one type — one of `research`, `prototype`, `grilling`, `task` (see [Ticket Types](#ticket-types)).
+Each ticket has one Type (see [configured Ticket Types](references/setup.md#b-ticket-types)), which define its interaction and resolution behavior.
 
 A session **claims** a ticket, **first**, before any work, so concurrent sessions skip it.
 
 Blocking follows the tracker's dependency convention. A ticket is **unblocked** when every ticket blocking it is closed; the **frontier** is the open, unblocked, unclaimed children — the edge of the known.
 
 The answer is recorded when the ticket resolves (see [Work through the map](#work-through-the-map)). Assets created while resolving a ticket are linked from it, not pasted in.
-
-## Ticket Types
-
-Every ticket is either **HITL** — human in the loop, worked *with* a human who speaks for themselves — or **AFK**, driven by the agent alone. A HITL ticket only resolves through that live exchange; the agent never stands in for the human's side of it (a grilling agent that answers its own questions has broken this).
-
-- **Research** (AFK): Reading documentation, third-party APIs, or local resources like knowledge bases to surface a fact a decision waits on. Resolved by a `/research` **subagent**. Use when knowledge outside the current working directory is required.
-- **Prototype** (HITL): Raise the fidelity of the discussion by making a cheap, rough, concrete artifact to react to — an outline, a rough take, a stub, or UI/logic code via the /prototype skill. Links the prototype as an asset. Use when "how should it look" or "how should it behave" is the key question.
-- **Grilling** (HITL): Conversation via the /grilling and /domain-modeling skills, one question at a time. The default case.
-- **Task** (HITL or AFK): Manual work that must happen before a *decision* can be made — nothing to decide, prototype, or research, but the discussion is blocked until it's done. Signing up for a service so its API can be judged, provisioning access, moving data so its shape can be seen. This is the one type that *does* rather than decides — and it earns its place by unblocking a decision, not by delivering the destination. The agent drives it alone where it can (AFK); otherwise it hands the human a precise checklist (HITL). Resolved when the work is done; the answer records what was done and any resulting facts (credentials location, new URLs, row counts) later tickets depend on.
 
 ## Fog of war
 
@@ -103,17 +94,17 @@ Ruling something out of scope is a scoping act, not a step on the route. When a 
 
 With no idea or map in the invocation, use the collected tracker context to summarize what is in progress and recommend what the user could do next; change nothing until they choose.
 
-Two work modes remain. Either way, **never resolve more than one ticket per session** — with the exception of research tickets.
+Two work modes remain. Either way, **never resolve more than one ticket per session** unless its type definition explicitly says otherwise.
 
 ### Chart the map
 
 User invokes with a loose idea.
 
-1. **Name the destination.** Run a `/grilling` and `/domain-modeling` session to pin down what this map is finding its way to — the spec, decision, or change. The destination fixes the scope, so it's settled first.
-2. **Map the frontier.** Grill again, **breadth-first** this time: fan out across the whole space rather than deep on any one thread, surfacing the open decisions and the first steps takeable now. **If this surfaces no fog** — the way to the destination is already clear, the whole journey small enough for one session — you don't need a map. Stop and ask the user how they'd like to proceed.
+1. **Name the destination.** Clarify with the user to pin down what this map is finding its way to — the spec, decision, or change. The destination fixes the scope, so it's settled first.
+2. **Map the frontier.** Clarify again, **breadth-first** this time: fan out across the whole space rather than deep on any one thread, surfacing the open decisions and the first steps takeable now. **If this surfaces no fog** — the way to the destination is already clear, the whole journey small enough for one session — you don't need a map. Stop and ask the user how they'd like to proceed.
 3. **Create the map**: Destination and Notes filled in, Decisions-so-far empty, the fog sketched into **Not yet specified**.
-4. **Create a child ticket for each question you can specify now** — then wire blocking edges in a **second pass** (tickets need tracker identities before they can reference each other). Wiring sorts them into the frontier and the blocked; everything you can't yet specify stays in the fog — the **Not yet specified** section.
-5. **Fire the research subagents.** For each `research` ticket you just created, spin up a `/research` subagent to resolve it in parallel, capturing its findings on a throwaway `research/<name>` branch with a context pointer from the ticket.
+4. **Choose each ticket's Type from its configured `Use when`, then create a child ticket for each question you can specify now** — then wire blocking edges in a **second pass** (tickets need tracker identities before they can reference each other). Wiring sorts them into the frontier and the blocked; everything you can't yet specify stays in the fog — the **Not yet specified** section.
+5. Follow any `After creation` behavior specified by the new tickets' Type definitions.
 6. Stop — charting is one session's work; it hand-resolves nothing.
 
 ### Work through the map
@@ -122,7 +113,7 @@ User invokes with an existing map. A ticket is **optional** — without one, you
 
 1. Load the **map** — the low-res view, not every ticket body.
 2. Choose the ticket. If the user named one, use it. Otherwise take the first frontier ticket in order. **Claim it** before any work.
-3. Resolve it — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, use `/grilling` and `/domain-modeling`.
+3. Resolve it — **zoom as needed**: fetch the full body of any related or closed ticket on demand; invoke the skills the `## Notes` block names. If in doubt, Clarify it.
 4. **Record its resolution using the tracker.**
 5. Add newly-surfaced tickets (create-then-wire); graduate any fog the answer has made specifiable, clearing each graduated patch from **Not yet specified** so it lives only as its new ticket. If the answer reveals a ticket — this one or another — sits beyond the destination, **rule it out of scope** rather than resolving it on the route. If the decision invalidates other parts of the map, update or delete those tickets.
 
