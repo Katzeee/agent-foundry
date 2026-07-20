@@ -1,22 +1,20 @@
 {
   "sourceBranch": "source",
-  "sourceCommit": "fc56f14008b007fa2af8715d97c912bf853d71c9",
-  "sourceDate": "2026-07-21T00:05:58+08:00",
+  "sourceCommit": "f2886958f2211127e595e849d5dcfd0fbbe97d6d",
+  "sourceDate": "2026-07-21T00:24:12+08:00",
   "sourceDirty": false,
   "files": {
-    ".agents/plugins/marketplace.json": "ffefe449e49bbfe7db4d1726083684357b5da57c28b5b304cf0be5a34f630e6d",
-    ".claude-plugin/marketplace.json": "e555b7ba003eaf8d05a6667f71713e3a757e2b0b37e943c806b6f9e1ba3ceeb1",
+    ".agents/plugins/marketplace.json": "f162963c1cd62d2540170bff25e7aca120a0e673a24ea28dd9ff01e08a4d6469",
+    ".claude-plugin/marketplace.json": "98e08c6c2ac6721c3b5787f6801980c5f93c4eb9605c1178edf14aee1938d507",
     ".github/workflows/publish.yml": "4c62f5ee698c0ddeb6f5cabd02224916ae8a485e6cb3b5b7dc4f15c2e4a09365",
-    "README.md": "b592e44e558e3e9591eae7c14edfc6e55bd9e87f21842fca6af5b19eaa8c5de0",
-    "plugins/wayfinder/.claude-plugin/plugin.json": "abef7d395727b924e11ff9f6c7c3e598c77c56f98687788a2c0b249182a6d55d",
-    "plugins/wayfinder/.codex-plugin/plugin.json": "ef1f48b43b0e179b56a9c0d2a84d1612f91a7654cd62ea5dd4c568d2c45fee95",
-    "plugins/wayfinder/skills/wayfinder/SKILL.md": "b2e3e888df5fe2479d19d9287e3f06b7afbd19336c1442846228fd4fea88330d",
-    "plugins/wayfinder/skills/wayfinder/agents/openai.yaml": "88bc81a11a6d52ac67aeaa76b8b619e387020d47c5133a4dd4927fd15c4ad073",
-    "plugins/wayfinder/skills/wayfinder/references/setup.md": "6634974095c34d3c3929012fb687550030196b0c038ac026905c3bb5589b6a53",
-    "plugins/wayfinder/skills/wayfinder/scripts/tracker.py": "db486e96872670f24da39da966f8f9fa5d5a335a213fcec801b48d525b5d794e",
-    "plugins/wayfinder/skills/wayfinder/scripts/validate_setup.py": "032e064f43ee6186046b690768903d74bdf799f88843cce06da3a3edb32bcc72",
-    "plugins/wayfinder/skills/wayfinder/templates/ticket-types.md": "a896963bd9ee5c3ebe8960d83c800789585175d8e25c3324fea8c8ef4b043cef",
-    "plugins/wayfinder/skills/wayfinder/templates/wayfinder.md": "49eada98f73700a4fc72dadf5eac53665985b6a6e5eb2aa1107e81f1559769ea",
-    "skills/code-review/SKILL.md": "e22cd745b330f6864ec866b7d804aabe1ee1358480cccaf3d2ac5399cf90479b"
+    "README.md": "a8775223163b3e3692d952ab2f7d98575a818144d56c250c0114d9e0503aed04",
+    "skills/code-review/SKILL.md": "e22cd745b330f6864ec866b7d804aabe1ee1358480cccaf3d2ac5399cf90479b",
+    "skills/wayfinder/SKILL.md": "b2e3e888df5fe2479d19d9287e3f06b7afbd19336c1442846228fd4fea88330d",
+    "skills/wayfinder/agents/openai.yaml": "88bc81a11a6d52ac67aeaa76b8b619e387020d47c5133a4dd4927fd15c4ad073",
+    "skills/wayfinder/references/setup.md": "6634974095c34d3c3929012fb687550030196b0c038ac026905c3bb5589b6a53",
+    "skills/wayfinder/scripts/tracker.py": "db486e96872670f24da39da966f8f9fa5d5a335a213fcec801b48d525b5d794e",
+    "skills/wayfinder/scripts/validate_setup.py": "032e064f43ee6186046b690768903d74bdf799f88843cce06da3a3edb32bcc72",
+    "skills/wayfinder/templates/ticket-types.md": "a896963bd9ee5c3ebe8960d83c800789585175d8e25c3324fea8c8ef4b043cef",
+    "skills/wayfinder/templates/wayfinder.md": "49eada98f73700a4fc72dadf5eac53665985b6a6e5eb2aa1107e81f1559769ea"
   }
 }

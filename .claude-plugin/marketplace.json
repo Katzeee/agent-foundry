@@ -5,15 +5,5 @@
   "owner": {
     "name": "Katzeee"
   },
-  "plugins": [
-    {
-      "name": "wayfinder",
-      "source": "./plugins/wayfinder",
-      "description": "Map large efforts as decision tickets and resolve them one step at a time.",
-      "author": {
-        "name": "Katzeee"
-      },
-      "category": "productivity"
-    }
-  ]
+  "plugins": []
 }
