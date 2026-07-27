@@ -1,20 +1,20 @@
 {
   "sourceBranch": "source",
-  "sourceCommit": "f2886958f2211127e595e849d5dcfd0fbbe97d6d",
-  "sourceDate": "2026-07-21T00:24:12+08:00",
+  "sourceCommit": "05dad50fafa5d98b263a246f499136885b1a7e7c",
+  "sourceDate": "2026-07-27T21:23:47+08:00",
   "sourceDirty": false,
   "files": {
     ".agents/plugins/marketplace.json": "f162963c1cd62d2540170bff25e7aca120a0e673a24ea28dd9ff01e08a4d6469",
     ".claude-plugin/marketplace.json": "98e08c6c2ac6721c3b5787f6801980c5f93c4eb9605c1178edf14aee1938d507",
-    ".github/workflows/publish.yml": "4c62f5ee698c0ddeb6f5cabd02224916ae8a485e6cb3b5b7dc4f15c2e4a09365",
-    "README.md": "a8775223163b3e3692d952ab2f7d98575a818144d56c250c0114d9e0503aed04",
-    "skills/code-review/SKILL.md": "e22cd745b330f6864ec866b7d804aabe1ee1358480cccaf3d2ac5399cf90479b",
+    ".github/workflows/publish.yml": "386ab37f00d857c2263438dc474faa1363dc0e54c80a406104610c8f76e163d2",
+    "README.md": "69a8b3bcde019c7a243f5dd8ef5eb0d7323fb4508d6c64b2ae2eab55727fe16e",
+    "skills/refactor-referee/SKILL.md": "f690f263ca3cb081f6521a8f6eff980b45a57edad5370aef8b974a1c8253461d",
     "skills/wayfinder/SKILL.md": "b2e3e888df5fe2479d19d9287e3f06b7afbd19336c1442846228fd4fea88330d",
     "skills/wayfinder/agents/openai.yaml": "88bc81a11a6d52ac67aeaa76b8b619e387020d47c5133a4dd4927fd15c4ad073",
     "skills/wayfinder/references/setup.md": "6634974095c34d3c3929012fb687550030196b0c038ac026905c3bb5589b6a53",
-    "skills/wayfinder/scripts/tracker.py": "db486e96872670f24da39da966f8f9fa5d5a335a213fcec801b48d525b5d794e",
-    "skills/wayfinder/scripts/validate_setup.py": "032e064f43ee6186046b690768903d74bdf799f88843cce06da3a3edb32bcc72",
+    "skills/wayfinder/scripts/tracker.py": "abe0776d279cb986cc6a0f355f1f9324c4ddb2cb2bf7f3aa6af5b73fce998038",
+    "skills/wayfinder/scripts/validate_setup.py": "4ef7f7ec9cf4267bb385043b455f12563b18e15e7b8b85e8a72f8a336883871a",
     "skills/wayfinder/templates/ticket-types.md": "a896963bd9ee5c3ebe8960d83c800789585175d8e25c3324fea8c8ef4b043cef",
-    "skills/wayfinder/templates/wayfinder.md": "49eada98f73700a4fc72dadf5eac53665985b6a6e5eb2aa1107e81f1559769ea"
+    "skills/wayfinder/templates/wayfinder.md": "01073e8bb58955053ccb2ff6b0844f41e09223a28801a594f727f067651b317c"
   }
 }

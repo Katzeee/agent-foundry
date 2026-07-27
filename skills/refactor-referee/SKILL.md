@@ -1,5 +1,5 @@
 ---
-name: code-review
+name: refactor-referee
 description: Two-phase refactoring — a read-only hunt that yields a table of leads, then a fix that investigates and resolves each. Use when asked to refactor, simplify, clean up, de-duplicate, or remove dead code / over-abstraction.
 ---
 

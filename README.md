@@ -4,7 +4,7 @@ This branch is generated from the `source` branch. Do not edit it directly.
 
 ## Published skills
 
-- `code-review`
+- `refactor-referee`
 - `wayfinder`
 
 ## Published plugins
