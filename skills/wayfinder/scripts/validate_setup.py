@@ -73,6 +73,20 @@ def find_repo_root(override: str | None = None) -> Path:
     raise ValidationError("Could not locate the repository root")
 
 
+def lexical_absolute(path: Path) -> Path:
+    """Make a path absolute without resolving symlinks or junctions."""
+    return Path(os.path.abspath(path))
+
+
+def stays_within(path: Path, root: Path) -> bool:
+    """Return whether a path stays lexically below a root."""
+    try:
+        lexical_absolute(path).relative_to(lexical_absolute(root))
+    except ValueError:
+        return False
+    return True
+
+
 def heading_sections(content: str, level: str = "##") -> list[tuple[str, str]]:
     headings = [match for match in HEADING_RE.finditer(content) if match.group(1) == level]
     sections: list[tuple[str, str]] = []
@@ -137,11 +151,8 @@ def validate_wayfinder(content: str, template: str, repo_root: Path) -> list[str
             errors.append("Tracker root must not be empty or a placeholder")
         elif configured.is_absolute():
             errors.append("Tracker root must be relative to the repository root")
-        else:
-            try:
-                (repo_root / configured).resolve().relative_to(repo_root)
-            except ValueError:
-                errors.append("Tracker root must stay inside the repository")
+        elif not stays_within(repo_root / configured, repo_root):
+            errors.append("Tracker root must stay inside the repository")
 
     for heading in (METHODS_HEADING, OPERATIONS_HEADING):
         required = required_definition_names(template, heading)
