@@ -53,9 +53,7 @@ The distribution also contains `.agents/plugins/marketplace.json` for Codex and 
 
 ## Publishing
 
-Pull requests and edits target `source`. Pushes do not run GitHub Actions. The workflow checks `source` every day at 10:17 Asia/Shanghai time and exits after checkout when its commit is already recorded in `main:build-manifest.json`. When an unpublished commit exists, it validates the source, replaces the `main` worktree with `dist/`, and creates a release commit.
-
-The workflow can also be run manually from the Actions tab. Its `force` input rebuilds an already-published source commit.
+Pull requests and edits target `source`. Pushes do not run GitHub Actions. Publishing is started manually from the Actions tab on the `source` branch. The workflow exits after checkout when that commit is already recorded in `main:build-manifest.json`; otherwise, it validates the source, replaces the `main` worktree with `dist/`, and creates a release commit. Its `force` input rebuilds an already-published source commit.
 
 The repository must allow the workflow `GITHUB_TOKEN` to write repository contents. If `main` has branch protection, allow this publishing workflow or its GitHub Actions bot to update the branch.
 
