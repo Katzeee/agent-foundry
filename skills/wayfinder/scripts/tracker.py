@@ -92,6 +92,24 @@ def find_repo_root() -> Path:
     raise TrackerError("Could not locate the repository root.")
 
 
+def lexical_absolute(path: Path) -> Path:
+    """Make a path absolute without resolving symlinks or junctions."""
+    return Path(os.path.abspath(path))
+
+
+def stays_within(path: Path, root: Path, *, resolve: bool = False) -> bool:
+    """Return whether a path stays below a root, lexically or after link resolution."""
+    if resolve:
+        path, root = path.resolve(), root.resolve()
+    else:
+        path, root = lexical_absolute(path), lexical_absolute(root)
+    try:
+        path.relative_to(root)
+    except ValueError:
+        return False
+    return True
+
+
 def load_tracker_root(repo_root: Path, *, ensure: bool = True) -> Path:
     config_path = repo_root / CONFIG_PATH
     if not config_path.is_file():
@@ -112,18 +130,16 @@ def load_tracker_root(repo_root: Path, *, ensure: bool = True) -> Path:
     if configured.is_absolute():
         raise TrackerError("Tracker root must be relative to the repository root.")
 
-    resolved = (repo_root / configured).resolve()
-    try:
-        resolved.relative_to(repo_root)
-    except ValueError as exc:
-        raise TrackerError("Tracker root must stay inside the repository.") from exc
+    logical = lexical_absolute(repo_root / configured)
+    if not stays_within(logical, repo_root):
+        raise TrackerError("Tracker root must stay inside the repository.")
 
     if ensure:
         try:
-            resolved.mkdir(parents=True, exist_ok=True)
+            logical.mkdir(parents=True, exist_ok=True)
         except OSError as exc:
             raise TrackerError(f"Could not create Tracker root {configured.as_posix()}: {exc}") from exc
-    return resolved
+    return logical
 
 
 def read_text(path: Path) -> str:
@@ -467,12 +483,24 @@ def validate_ticket_types(map_data: MapData, allowed_types: set[str]) -> list[st
     ]
 
 
-def load_maps(tracker_root: Path, allowed_types: set[str]) -> tuple[list[MapData], list[str]]:
-    maps: list[MapData] = []
+def discover_map_dirs(tracker_root: Path) -> tuple[list[Path], list[str]]:
+    """Find maps while rejecting directory links that escape the Tracker root."""
+    map_dirs: list[Path] = []
     diagnostics: list[str] = []
     for child in sorted(tracker_root.iterdir()):
         if not child.is_dir() or not (child / "map.md").is_file():
             continue
+        if not stays_within(child, tracker_root, resolve=True):
+            diagnostics.append(f"{child.name}: Map path must stay inside the Tracker root.")
+            continue
+        map_dirs.append(child)
+    return map_dirs, diagnostics
+
+
+def load_maps(tracker_root: Path, allowed_types: set[str]) -> tuple[list[MapData], list[str]]:
+    maps: list[MapData] = []
+    map_dirs, diagnostics = discover_map_dirs(tracker_root)
+    for child in map_dirs:
         map_data, errors = parse_map(child)
         if map_data is not None:
             maps.append(map_data)
@@ -483,7 +511,7 @@ def load_maps(tracker_root: Path, allowed_types: set[str]) -> tuple[list[MapData
 
 
 def repo_relative(path: Path, repo_root: Path) -> str:
-    return path.resolve().relative_to(repo_root).as_posix()
+    return lexical_absolute(path).relative_to(repo_root).as_posix()
 
 
 def compact_text(value: str) -> str:
@@ -498,11 +526,11 @@ def ticket_is_unblocked(ticket: Ticket, ticket_by_number: dict[int, Ticket]) -> 
 
 
 def resolve_map_dir(tracker_root: Path, map_ref: str) -> Path:
-    candidate = (tracker_root / map_ref).resolve()
-    try:
-        candidate.relative_to(tracker_root)
-    except ValueError as exc:
-        raise TrackerError("Map reference must stay inside the Tracker root.") from exc
+    candidate = lexical_absolute(tracker_root / map_ref)
+    if not stays_within(candidate, tracker_root) or not stays_within(
+        candidate, tracker_root, resolve=True
+    ):
+        raise TrackerError("Map reference must stay inside the Tracker root.")
     if not candidate.is_dir() or not (candidate / "map.md").is_file():
         raise TrackerError(f"Map not found: {map_ref}")
     return candidate
@@ -659,16 +687,13 @@ Blocked by:
 def command_validate(args: argparse.Namespace) -> int:
     repo_root = find_repo_root()
     tracker_root = load_tracker_root(repo_root)
+    discovery_errors: list[str] = []
     if args.map:
         map_dirs = [resolve_map_dir(tracker_root, args.map)]
     else:
-        map_dirs = [
-            child
-            for child in sorted(tracker_root.iterdir())
-            if child.is_dir() and (child / "map.md").is_file()
-        ]
+        map_dirs, discovery_errors = discover_map_dirs(tracker_root)
 
-    errors: list[str] = []
+    errors = discovery_errors
     allowed_types = configured_ticket_types(repo_root)
     for map_dir in map_dirs:
         map_data, map_errors = parse_map(map_dir)
