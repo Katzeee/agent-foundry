@@ -9,6 +9,9 @@
     "repository": "https://github.com/Katzeee/agent-foundry"
   },
   "skills": {
+    "configure-agent-guidance": {
+      "publish": true
+    },
     "refactor-referee": {
       "publish": true
     },
