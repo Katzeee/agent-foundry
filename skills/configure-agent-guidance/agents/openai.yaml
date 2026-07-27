@@ -1,0 +1,6 @@
+interface:
+  display_name: "Configure Agent Guidance"
+  short_description: "Install reusable sections into AGENTS.md"
+  default_prompt: "Use $configure-agent-guidance to install response-style guidance into my AGENTS.md."
+policy:
+  allow_implicit_invocation: false

@@ -4,6 +4,7 @@ This branch is generated from the `source` branch. Do not edit it directly.
 
 ## Published skills
 
+- `configure-agent-guidance`
 - `refactor-referee`
 - `wayfinder`
 
