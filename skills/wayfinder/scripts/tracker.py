@@ -671,8 +671,11 @@ def command_create_ticket(args: argparse.Namespace) -> int:
     content = """# <Ticket title>
 
 Type: <configured ticket type>
+
 State: open
+
 Claimed by:
+
 Blocked by:
 
 ## Question
