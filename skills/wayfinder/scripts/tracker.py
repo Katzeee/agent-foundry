@@ -16,8 +16,8 @@ from pathlib import Path
 CONFIG_PATH = Path("docs/agents/wayfinder/wayfinder.md")
 TICKET_TYPES_PATH = Path("docs/agents/wayfinder/ticket-types.md")
 TRACKER_ROOT_RE = re.compile(r"^Tracker root:\s*`([^`]+)`\s*$", re.MULTILINE)
-TICKET_FILE_RE = re.compile(r"^(\d+)(?:-([a-z0-9][a-z0-9-]*))?\.md$")
-SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+TICKET_FILE_RE = re.compile(r"^(\d+)-([a-z0-9]+(?:-[a-z0-9]+)*)\.md$")
+SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 STATES = {"open", "claimed", "closed"}
 MAP_HEADINGS = (
     "Destination",
@@ -219,7 +219,7 @@ def parse_ticket(path: Path) -> tuple[Ticket | None, list[str]]:
     errors: list[str] = []
     match = TICKET_FILE_RE.match(path.name)
     if not match:
-        return None, ["filename must start with a numeric Ticket ID"]
+        return None, ["filename must use `NN-<type>-<slug>.md`"]
 
     try:
         content = read_text(path)
@@ -249,6 +249,14 @@ def parse_ticket(path: Path) -> tuple[Ticket | None, list[str]]:
             errors.append(f"must contain exactly one `{name}:` field before `## Question`")
         elif name == "Type" and is_placeholder(value):
             errors.append("missing Type")
+    if raw_ticket_type and not is_placeholder(raw_ticket_type):
+        expected_prefix = f"{raw_ticket_type}-"
+        filename_tail = match.group(2)
+        if not filename_tail.startswith(expected_prefix):
+            errors.append(
+                "filename must be `NN-<type>-<slug>.md` with "
+                f"`{raw_ticket_type}` matching the `Type:` field"
+            )
     if state not in STATES:
         errors.append(f"State must be one of: {', '.join(sorted(STATES))}")
     if h2_count(content, "Question") != 1 or is_placeholder(question):
@@ -316,7 +324,7 @@ def parse_index_entries(
             if strict:
                 errors.append(
                     f"`## {heading}` line {line_number} must be "
-                    "`- [Ticket title](issues/NN-slug.md) — gist`"
+                    "`- [Ticket title](issues/NN-type-slug.md) — gist`"
                 )
             continue
         entries.append(
@@ -624,6 +632,12 @@ def validate_slug(value: str) -> str:
     return value
 
 
+def validate_type_name(value: str) -> str:
+    if not SLUG_RE.fullmatch(value):
+        raise TrackerError("Type must contain lowercase letters, digits, and single hyphens only.")
+    return value
+
+
 def command_create_map(args: argparse.Namespace) -> int:
     repo_root = find_repo_root()
     tracker_root = load_tracker_root(repo_root)
@@ -663,6 +677,13 @@ def command_create_ticket(args: argparse.Namespace) -> int:
     repo_root = find_repo_root()
     tracker_root = load_tracker_root(repo_root)
     map_dir = resolve_map_dir(tracker_root, args.map)
+    ticket_type = validate_type_name(args.type)
+    allowed_types = configured_ticket_types(repo_root)
+    if ticket_type not in allowed_types:
+        configured = ", ".join(sorted(allowed_types)) or "none"
+        raise TrackerError(
+            f"Type `{ticket_type}` is not configured. Configured Types: {configured}."
+        )
     slug = validate_slug(args.slug)
     issues_dir = map_dir / "issues"
     issues_dir.mkdir(exist_ok=True)
@@ -672,10 +693,10 @@ def command_create_ticket(args: argparse.Namespace) -> int:
         if match:
             numbers.append(int(match.group(1)))
     number = max(numbers, default=0) + 1
-    issue_path = issues_dir / f"{number:02d}-{slug}.md"
-    content = """# <Ticket title>
+    issue_path = issues_dir / f"{number:02d}-{ticket_type}-{slug}.md"
+    content = f"""# <Ticket title>
 
-Type: <configured ticket type>
+Type: {ticket_type}
 
 State: open
 
@@ -734,6 +755,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     ticket_parser = subparsers.add_parser("create-ticket", help="Create a child Ticket template")
     ticket_parser.add_argument("map", help="Map directory name")
+    ticket_parser.add_argument("type", help="Configured Ticket Type")
     ticket_parser.add_argument("slug", help="Ticket filename slug")
     ticket_parser.set_defaults(handler=command_create_ticket)
 
