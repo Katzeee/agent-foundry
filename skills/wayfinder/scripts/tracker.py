@@ -18,7 +18,7 @@ TICKET_TYPES_PATH = Path("docs/agents/wayfinder/ticket-types.md")
 TRACKER_ROOT_RE = re.compile(r"^Tracker root:\s*`([^`]+)`\s*$", re.MULTILINE)
 TICKET_FILE_RE = re.compile(r"^(\d+)(?:-([a-z0-9][a-z0-9-]*))?\.md$")
 SLUG_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
-STATES = {"open", "closed"}
+STATES = {"open", "claimed", "closed"}
 MAP_HEADINGS = (
     "Destination",
     "Notes",
@@ -40,7 +40,6 @@ class Ticket:
     title: str
     ticket_type: str
     state: str
-    claimed_by: str
     blocked_by: list[int]
     question: str
     answer: str | None
@@ -232,10 +231,8 @@ def parse_ticket(path: Path) -> tuple[Ticket | None, list[str]]:
     metadata = pre_question_metadata(content)
     raw_ticket_type = field(metadata, "Type")
     raw_state = field(metadata, "State")
-    raw_claimed_by = field(metadata, "Claimed by")
     raw_blocked_by = field(metadata, "Blocked by")
     state = raw_state or ""
-    claimed_by = raw_claimed_by or ""
     blocked_by, blocker_errors = parse_blockers(raw_blocked_by)
     question = section(content, "Question")
     answer = section(content, "Answer")
@@ -245,7 +242,6 @@ def parse_ticket(path: Path) -> tuple[Ticket | None, list[str]]:
     for name, value in (
         ("Type", raw_ticket_type),
         ("State", raw_state),
-        ("Claimed by", raw_claimed_by),
         ("Blocked by", raw_blocked_by),
     ):
         count = len(re.findall(rf"^{re.escape(name)}:[ \t]*.*$", metadata, re.MULTILINE))
@@ -260,8 +256,20 @@ def parse_ticket(path: Path) -> tuple[Ticket | None, list[str]]:
     answer_count = h2_count(content, "Answer")
     if state == "closed" and (answer_count != 1 or is_placeholder(answer)):
         errors.append("closed Ticket must contain exactly one non-empty `## Answer`")
-    if state == "open" and answer_count:
-        errors.append("open Ticket must not contain `## Answer`")
+    if state in {"open", "claimed"} and answer_count:
+        errors.append(f"{state} Ticket must not contain `## Answer`")
+    raw_legacy_claim = field(metadata, "Claimed by")
+    legacy_claim_count = len(
+        re.findall(r"^Claimed by:[ \t]*.*$", metadata, re.MULTILINE)
+    )
+    if legacy_claim_count:
+        if raw_legacy_claim:
+            errors.append(
+                "legacy `Claimed by:` field is unsupported; "
+                "change `State:` to `claimed` and remove the field"
+            )
+        else:
+            errors.append("legacy `Claimed by:` field is unsupported; remove the field")
     errors.extend(blocker_errors)
     if len(blocked_by) != len(set(blocked_by)):
         errors.append("Blocked by contains duplicate Ticket IDs")
@@ -273,7 +281,6 @@ def parse_ticket(path: Path) -> tuple[Ticket | None, list[str]]:
         title=title,
         ticket_type=raw_ticket_type or "",
         state=state,
-        claimed_by=claimed_by,
         blocked_by=blocked_by,
         question=question or "",
         answer=answer,
@@ -422,8 +429,11 @@ def validate_index_entries(
 
     for ticket in tickets:
         ticket_entries = entries_by_ticket.get(ticket.number, [])
-        if ticket.state == "open" and ticket_entries:
-            errors.append(f"map.md: open Ticket {ticket.number_text} must not appear in a closed index")
+        if ticket.state != "closed" and ticket_entries:
+            errors.append(
+                f"map.md: {ticket.state} Ticket {ticket.number_text} "
+                "must not appear in a closed index"
+            )
         if ticket.state == "closed" and len(ticket_entries) != 1:
             errors.append(
                 f"map.md: closed Ticket {ticket.number_text} must appear exactly once in a closed index"
@@ -554,19 +564,17 @@ def command_collect(args: argparse.Namespace) -> int:
             ticket
             for ticket in map_data.tickets
             if ticket.state == "open"
-            and not ticket.claimed_by
             and ticket_is_unblocked(ticket, ticket_by_number)
         ]
         claimed = [
             ticket
             for ticket in map_data.tickets
-            if ticket.state == "open" and ticket.claimed_by
+            if ticket.state == "claimed"
         ]
         blocked = [
             ticket
             for ticket in map_data.tickets
             if ticket.state == "open"
-            and not ticket.claimed_by
             and not ticket_is_unblocked(ticket, ticket_by_number)
         ]
         active_count = len(frontier) + len(blocked) + len(claimed)
@@ -581,7 +589,7 @@ def command_collect(args: argparse.Namespace) -> int:
         print(f"Destination: {compact_text(map_data.destination) or '(missing)'}")
         print()
         print(
-            f"Open tickets: {active_count} — {len(frontier)} frontier, "
+            f"Active tickets: {active_count} — {len(frontier)} frontier, "
             f"{len(blocked)} blocked, {len(claimed)} claimed"
         )
         print()
@@ -597,10 +605,7 @@ def command_collect(args: argparse.Namespace) -> int:
         print()
         if claimed:
             for ticket in sorted(claimed, key=lambda item: item.number):
-                print(
-                    f"- `{ticket.number_text}` {ticket.title} — "
-                    f"{ticket.ticket_type}; claimed by {ticket.claimed_by}"
-                )
+                print(f"- `{ticket.number_text}` {ticket.title} — {ticket.ticket_type}")
         else:
             print("None.")
 
@@ -673,8 +678,6 @@ def command_create_ticket(args: argparse.Namespace) -> int:
 Type: <configured ticket type>
 
 State: open
-
-Claimed by:
 
 Blocked by:
 
