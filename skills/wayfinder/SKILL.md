@@ -65,7 +65,7 @@ Each ticket has one Type (see [configured Ticket Types](references/setup.md#b-ti
 
 A session **claims** a ticket, **first**, before any work, so concurrent sessions skip it.
 
-Blocking follows the tracker's dependency convention. A ticket is **unblocked** when every ticket blocking it is closed; the **frontier** is the open, unblocked, unclaimed children — the edge of the known.
+Blocking follows the tracker's dependency convention. A ticket is **unblocked** when every ticket blocking it is closed; the **frontier** is the open, unblocked children — the edge of the known.
 
 The answer is recorded when the ticket resolves (see [Work through the map](#work-through-the-map)). Assets created while resolving a ticket are linked from it, not pasted in.
 
