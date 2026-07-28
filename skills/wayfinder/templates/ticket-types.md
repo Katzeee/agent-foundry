@@ -1,6 +1,6 @@
 # Ticket Types
 
-Every ticket has exactly one Type, persisted by the issue tracker. Type definitions own interaction and resolution behavior; the tracker only stores the Type name.
+Every ticket has exactly one Type, persisted by the issue tracker. Each `##` heading is its lowercase kebab-case identifier. Type definitions own interaction and resolution behavior; the tracker only stores the identifier.
 
 **HITL** means human in the loop: the ticket is worked with a human who speaks for themselves. The agent never stands in for the human's side. **AFK** means the agent drives the ticket alone.
 
