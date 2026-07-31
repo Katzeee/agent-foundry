@@ -5,6 +5,7 @@ This branch is generated from the `source` branch. Do not edit it directly.
 ## Published skills
 
 - `configure-agent-guidance`
+- `domain-modeling`
 - `refactor-referee`
 - `wayfinder`
 

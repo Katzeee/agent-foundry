@@ -340,11 +340,17 @@ def parse_index_entries(
 
 def parse_map(map_dir: Path) -> tuple[MapData | None, list[str]]:
     map_path = map_dir / "map.md"
+    domain_path = map_dir / "domain.md"
     errors: list[str] = []
     try:
         content = read_text(map_path)
     except TrackerError as exc:
         return None, [str(exc)]
+    try:
+        domain_content = read_text(domain_path)
+    except TrackerError as exc:
+        domain_content = None
+        errors.append(str(exc))
 
     title = first_h1(content)
     destination = section(content, "Destination")
@@ -363,6 +369,23 @@ def parse_map(map_dir: Path) -> tuple[MapData | None, list[str]]:
     ]
     if headings != list(MAP_HEADINGS):
         errors.append("map.md: top-level sections must be exactly the Wayfinder sections in template order")
+
+    if domain_content is not None:
+        domain_title = first_h1(domain_content)
+        if h1_count(domain_content) != 1 or is_placeholder(domain_title):
+            errors.append("domain.md: must contain exactly one non-placeholder H1 heading")
+        domain_description_match = re.search(
+            r"^#\s+.+?\s*$\n(.*?)(?=^##\s+|\Z)",
+            domain_content,
+            re.MULTILINE | re.DOTALL,
+        )
+        domain_description = (
+            domain_description_match.group(1).strip() if domain_description_match else None
+        )
+        if is_placeholder(domain_description):
+            errors.append("domain.md: must contain a non-placeholder description below its H1")
+        if h2_count(domain_content, "Language") != 1:
+            errors.append("domain.md: must contain exactly one `## Language` section")
 
     index_entries: list[IndexEntry] = []
     for heading, strict in (("Decisions so far", True), ("Out of scope", False)):
@@ -400,7 +423,7 @@ def parse_map(map_dir: Path) -> tuple[MapData | None, list[str]]:
     errors.extend(validate_dag(tickets))
     errors.extend(validate_index_entries(map_dir, tickets, index_entries))
 
-    tracked_files = [map_path, *ticket_files]
+    tracked_files = [map_path, *([domain_path] if domain_path.is_file() else []), *ticket_files]
     updated_at = max((path.stat().st_mtime for path in tracked_files), default=map_path.stat().st_mtime)
     return MapData(
         directory=map_dir,
@@ -648,6 +671,7 @@ def command_create_map(args: argparse.Namespace) -> int:
     map_dir.mkdir(parents=True)
     (map_dir / "issues").mkdir()
     map_path = map_dir / "map.md"
+    domain_path = map_dir / "domain.md"
     content = """# <Map title>
 
 ## Destination
@@ -669,6 +693,13 @@ def command_create_map(args: argparse.Namespace) -> int:
 <work consciously ruled beyond this map's destination>
 """
     write_text(map_path, content)
+    domain_content = """# <Context name>
+
+<one or two sentence description of what this context is and why it exists>
+
+## Language
+"""
+    write_text(domain_path, domain_content)
     print(repo_relative(map_path, repo_root))
     return 0
 

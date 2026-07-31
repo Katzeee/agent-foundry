@@ -36,7 +36,7 @@ requires:
   - skill: grilling
     install: npx skills@latest add mattpocock/skills --skill=grilling
   - skill: domain-modeling
-    install: npx skills@latest add mattpocock/skills --skill=domain-modeling
+    install: npx skills@latest add Katzeee/agent-foundry --skill=domain-modeling
 -->
 
 - **Interaction:** HITL
