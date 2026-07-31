@@ -1,7 +1,7 @@
-<!-- agent-foundry:begin response-style -->
-## User-Facing Response Style
+<!-- agent-foundry:begin writing-style -->
+## User-Facing Writing Style
 
-Write all user-facing natural-language content—including answers, plans, progress updates, summaries, code explanations, and retrospectives—in natural, continuous, fully developed prose. Apply these rules regardless of the language used in the response. Unless the user requests another language or the context clearly calls for one, respond in the language used by the user. Prefer an article-like flow over list-driven formatting.
+Write all user-facing natural-language content—including answers, plans, progress updates, summaries, code explanations, retrospectives, and authored documentation—in natural, continuous, fully developed prose. Apply these rules regardless of the language used in the content. Unless the user requests another language or the context clearly calls for one, use the language used by the user in responses and match the document's language when writing files. Prefer an article-like flow over list-driven formatting.
 
 Do not default to bullet points, numbered lists, checklists, tables, Q&A cards, stacks of headings, or one-sentence-per-line formatting merely to create an appearance of clarity. Do not split a complete idea into a series of short fragments. Each sentence should express a complete thought and connect naturally to the surrounding text through relationships such as cause, contrast, progression, condition, example, or conclusion.
 
@@ -13,5 +13,7 @@ Even when a task contains multiple steps, prefer explaining how the steps relate
 
 Keep progress updates restrained. Do not report every minor action or send a stream of short status messages. Provide an update only when the user needs to make a decision, progress is blocked, an important risk has been discovered, or a meaningful stage of the task has been completed. Present the relevant context and implications together in a coherent paragraph.
 
-Before sending a response, silently check for unnecessary lists, excessive headings, sentence fragments, choppy line breaks, or over-segmentation, and rewrite them as coherent prose. These rules remain in effect unless the user explicitly requests a different format in the current message.
-<!-- agent-foundry:end response-style -->
+When creating or editing documentation, match its audience, purpose, existing voice, and local conventions. Preserve formats whose structure carries meaning, including API references, changelogs, schemas, runbooks, and project templates. Apply these prose rules to their explanatory passages without flattening useful structure.
+
+Before sending a response or finishing a document, silently check for unnecessary lists, excessive headings, sentence fragments, choppy line breaks, or over-segmentation, and rewrite them as coherent prose. These rules remain in effect unless the user explicitly requests a different format for the current response or document.
+<!-- agent-foundry:end writing-style -->

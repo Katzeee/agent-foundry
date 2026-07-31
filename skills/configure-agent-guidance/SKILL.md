@@ -28,3 +28,5 @@ Stop without writing if a boundary is missing, duplicated, reversed, or nested i
 For removal, delete only the selected managed block and collapse the blank lines left at its former boundary. Never remove an unmarked section without explicit confirmation.
 
 After a successful change, report the target file and affected section. Remind the user that newly written `AGENTS.md` guidance is normally picked up when a new Codex run or task starts.
+
+After completing the requested operation, compare every well-formed `agent-foundry` managed block identifier in the target with the current template filename stems. If any managed section is no longer provided, leave it unchanged and ask whether the user wants it removed.
