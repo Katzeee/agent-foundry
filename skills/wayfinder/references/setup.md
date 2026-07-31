@@ -18,7 +18,7 @@ Run the bundled [setup validator](../scripts/validate_setup.py). Use its diagnos
 5. For the recommended choice, keep the template's `Clarify` definition. For other Skills, read them and replace the definition accordingly. For a self-contained choice, draft the definition and show it once for confirmation.
 6. Inspect every Skill named by the selected document. If recommended Clarify Skills are missing, ask once for permission to run all applicable commands, then verify each installation:
    - `npx skills@latest add mattpocock/skills --skill=grilling`
-   - `npx skills@latest add mattpocock/skills --skill=domain-modeling`
+   - `npx skills@latest add Katzeee/agent-foundry --skill=domain-modeling`
    For any other missing Skill, collect an installation command and permission, substitute an available Skill, or revise the affected method or operation to be self-contained.
 7. Ensure the configured Tracker root is ignored, adding the narrowest root `.gitignore` rule when needed.
 8. Write a new or revised document to `docs/agents/wayfinder/wayfinder.md`.

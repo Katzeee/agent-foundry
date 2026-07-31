@@ -17,7 +17,7 @@ Every map and ticket has a **name** — its title. In everything the human reads
 
 ## The Map
 
-The map is the canonical tracker artifact for an effort. Its tickets are children of the map.
+The map is the canonical tracker artifact for an effort. Its tickets are children of the map, and its `domain.md` holds the effort's shared language.
 
 The map is an **index**, not a store. It lists the decisions made and points at the tickets that hold their detail; a decision lives in exactly one place — its ticket — so the map never restates it, only gists it and links.
 
@@ -102,7 +102,7 @@ User invokes with a loose idea.
 
 1. **Name the destination.** Clarify with the user to pin down what this map is finding its way to — the spec, decision, or change. The destination fixes the scope, so it's settled first.
 2. **Map the frontier.** Clarify again, **breadth-first** this time: fan out across the whole space rather than deep on any one thread, surfacing the open decisions and the first steps takeable now. **If this surfaces no fog** — the way to the destination is already clear, the whole journey small enough for one session — you don't need a map. Stop and ask the user how they'd like to proceed.
-3. **Create the map**: Destination and Notes filled in, Decisions-so-far empty, the fog sketched into **Not yet specified**.
+3. **Create the map**: create its templates, then fill `map.md` with Destination and Notes, an empty Decisions-so-far, and the fog sketched into **Not yet specified**. Fill `domain.md` with the domain language confirmed while clarifying.
 4. **Choose each ticket's Type from its configured `Use when`, then create a child ticket for each question you can specify now** — then wire blocking edges in a **second pass** (tickets need tracker identities before they can reference each other). Wiring sorts them into the frontier and the blocked; everything you can't yet specify stays in the fog — the **Not yet specified** section.
 5. Follow any `After creation` behavior specified by the new tickets' Type definitions.
 6. Stop — charting is one session's work; it hand-resolves nothing.

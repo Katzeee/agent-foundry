@@ -12,6 +12,9 @@
     "configure-agent-guidance": {
       "publish": true
     },
+    "domain-modeling": {
+      "publish": true
+    },
     "refactor-referee": {
       "publish": true
     },
