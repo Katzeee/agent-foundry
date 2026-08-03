@@ -70,7 +70,10 @@ def find_repo_root(override: str | None = None) -> Path:
     for candidate in (current, *current.parents):
         if (candidate / ".git").exists() or (candidate / WAYFINDER_PATH).is_file():
             return candidate
-    raise ValidationError("Could not locate the repository root")
+    raise ValidationError(
+        "Could not locate the repository root; rerun with --repo-root <path> "
+        "or set WAYFINDER_REPO_ROOT"
+    )
 
 
 def lexical_absolute(path: Path) -> Path:
@@ -261,7 +264,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Validate Wayfinder repository setup")
     parser.add_argument(
         "--repo-root",
-        help="Repository root (default: WAYFINDER_REPO_ROOT, Git root, or current ancestors)",
+        help="Repository root (default: WAYFINDER_REPO_ROOT, Git root, or configured ancestor)",
     )
     return parser
 

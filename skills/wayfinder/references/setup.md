@@ -9,18 +9,20 @@ Complete Wayfinder setup first, then Ticket Types setup. Preserve a structurally
 
 Run the bundled [setup validator](../scripts/validate_setup.py). Use its diagnostics to repair document structure, and check Skill availability separately. Run it again after both sections are complete.
 
+A path is **local-only** when it is untracked and ignored by every version control system that applies to it.
+
 ## A. Wayfinder
 
 1. Use the setup validator's diagnostics for `docs/agents/wayfinder/wayfinder.md`. Read the [Wayfinder template](../templates/wayfinder.md) only when creating or repairing the document.
 2. If the document is structurally usable, select it unchanged. Otherwise, show it if it exists and draft a replacement from the template, preserving any valid Tracker root, method, or operation from the existing document.
-3. If the draft has no valid Tracker root, use a user-supplied repository-relative root after confirming it stays inside the repository. Without one, inspect applicable `.gitignore` files and recommend a `.scratch/` child of a suitable ignored directory; when none exists, recommend `.scratch/` at the repository root and say it will be added to `.gitignore`. Ask one question to confirm the recommendation or collect another repository-relative path.
+3. If the draft has no valid Tracker root, use a user-supplied repository-relative root after confirming it stays inside the repository. Without one, inspect the repository's version control systems and recommend a `.scratch/` child of a suitable local-only directory. When none exists, recommend `.scratch/` at the repository root and explain which ignore rules must be added. Ask one question to confirm the recommendation or collect another repository-relative path.
 4. When creating or replacing `Clarify`, inspect the Skills currently available, then ask how Wayfinder should implement it: use the recommended `/grilling` plus `/domain-modeling`, use other available Skills, or use a self-contained procedure. It must work with the user one focused question at a time and never answer for them.
 5. For the recommended choice, keep the template's `Clarify` definition. For other Skills, read them and replace the definition accordingly. For a self-contained choice, draft the definition and show it once for confirmation.
 6. Inspect every Skill named by the selected document. If recommended Clarify Skills are missing, ask once for permission to run all applicable commands, then verify each installation:
    - `npx skills@latest add mattpocock/skills --skill=grilling`
    - `npx skills@latest add Katzeee/agent-foundry --skill=domain-modeling`
    For any other missing Skill, collect an installation command and permission, substitute an available Skill, or revise the affected method or operation to be self-contained.
-7. Ensure the configured Tracker root is ignored, adding the narrowest root `.gitignore` rule when needed.
+7. Make the configured Tracker root local-only, adding the narrowest applicable ignore rules when needed. If this cannot be checked or done safely, stop and ask the user how to proceed.
 8. Write a new or revised document to `docs/agents/wayfinder/wayfinder.md`.
 
 ## B. Ticket Types
@@ -33,4 +35,4 @@ Run the bundled [setup validator](../scripts/validate_setup.py). Use its diagnos
 6. Write a new or revised catalog to `docs/agents/wayfinder/ticket-types.md` without setup-only comments.
 7. Run `python <setup-validator>` and repair every reported error before finishing.
 
-Setup is complete when both documents are structurally usable, the Tracker root is ignored, and every Skill named by the configured methods, Tracker operations, or a confirmed `Resolve` is available. The tracker CLI creates the Tracker root on first use.
+Setup is complete when both documents are structurally usable, the Tracker root is local-only, and every Skill named by the configured methods, Tracker operations, or a confirmed `Resolve` is available. The tracker CLI creates the Tracker root on first use.
