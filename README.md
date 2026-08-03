@@ -6,6 +6,7 @@ This branch is generated from the `source` branch. Do not edit it directly.
 
 - `configure-agent-guidance`
 - `domain-modeling`
+- `handoff`
 - `refactor-referee`
 - `wayfinder`
 
