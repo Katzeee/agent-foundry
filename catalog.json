@@ -15,6 +15,9 @@
     "domain-modeling": {
       "publish": true
     },
+    "handoff": {
+      "publish": true
+    },
     "refactor-referee": {
       "publish": true
     },
