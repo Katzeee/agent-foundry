@@ -1,0 +1,6 @@
+interface:
+  display_name: "Refactor Referee"
+  short_description: "Hunt and resolve refactoring leads"
+  default_prompt: "Use $refactor-referee to hunt for refactoring leads, then investigate and resolve confirmed ones."
+policy:
+  allow_implicit_invocation: false
