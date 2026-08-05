@@ -1,6 +1,7 @@
 ---
 name: refactor-referee
 description: Two-phase refactoring — a read-only hunt that yields a table of leads, then a fix that investigates and resolves each. Use when asked to refactor, simplify, clean up, de-duplicate, or remove dead code / over-abstraction.
+disable-model-invocation: true
 ---
 
 Refactor in two phases. **hunt** is read-only and optimizes recall: it finds and clusters suspicious places into **leads**, and touches nothing. **fix** optimizes precision: it takes one lead at a time, investigates until the truth and owner are known, runs the referee, then resolves confirmed leads or names their blockers. The discipline in one line — **a hit becomes a lead only if it is worth inspecting; a lead becomes a change only after fix investigates it and the referee judges it; fix deepens a lead but adopts no unrelated ones.** Understanding a problem happens when you prepare to change it — so HUNT proposes, FIX decides.
