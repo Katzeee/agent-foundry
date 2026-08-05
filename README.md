@@ -8,6 +8,7 @@ This branch is generated from the `source` branch. Do not edit it directly.
 - `domain-modeling`
 - `handoff`
 - `refactor-referee`
+- `spike`
 - `wayfinder`
 
 ## Published plugins

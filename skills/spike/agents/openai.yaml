@@ -1,0 +1,6 @@
+interface:
+  display_name: "Spike"
+  short_description: "Make decisions observable with throwaway work"
+  default_prompt: "Use $spike to make this decision observable with a disposable artifact."
+policy:
+  allow_implicit_invocation: false

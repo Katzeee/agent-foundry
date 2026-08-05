@@ -1,13 +1,13 @@
 {
   "sourceBranch": "source",
-  "sourceCommit": "ebefb6b6cd8b37368e8d7912ca479099c5aa019e",
-  "sourceDate": "2026-08-05T19:28:30+08:00",
+  "sourceCommit": "49390bb8c0f939f55a9e58dace69c226fc0956d2",
+  "sourceDate": "2026-08-06T00:42:27+08:00",
   "sourceDirty": false,
   "files": {
     ".agents/plugins/marketplace.json": "f162963c1cd62d2540170bff25e7aca120a0e673a24ea28dd9ff01e08a4d6469",
     ".claude-plugin/marketplace.json": "98e08c6c2ac6721c3b5787f6801980c5f93c4eb9605c1178edf14aee1938d507",
     ".github/workflows/publish.yml": "386ab37f00d857c2263438dc474faa1363dc0e54c80a406104610c8f76e163d2",
-    "README.md": "d5247083bc7278e7fc8454a4c37210e7c2a3c188df6e5146e5bc384d0056c903",
+    "README.md": "977a7b4977af1e76e72a6de6d2511ecd2ba8c473cd625fad8a76cee4d2e366ca",
     "skills/configure-agent-guidance/SKILL.md": "bfbda47fd31350f3608e99dd2a04c7762b1357d51dec81f8b941e80fa695fb54",
     "skills/configure-agent-guidance/agents/openai.yaml": "ef910042d431b503549aed93a1abe753aa4035fb8c7390168dae0803bfd5d702",
     "skills/configure-agent-guidance/templates/writing-style.md": "3445cecc3e7c5b8c8867985b4ea9c7a7d9bd7a6d7fedc51e4fe7772b0788ce24",
@@ -17,12 +17,14 @@
     "skills/handoff/agents/openai.yaml": "5c479fd562c691851690e8b18c8501045bef0943c10743d636b2fae26add1d28",
     "skills/refactor-referee/SKILL.md": "4aae8569948c79da0dbec1862fe201757d1f003d88a56d17b8049a0f90afd10a",
     "skills/refactor-referee/agents/openai.yaml": "f9df5a4dee427c242b44a9b4ab7d1577cca3974e43947540fa9279c4ee07d338",
+    "skills/spike/SKILL.md": "3c83c177ed871b2f4f492f996f2739b5b16100bef7130ee56857835440c225bb",
+    "skills/spike/agents/openai.yaml": "78b49d34c5527df7c0b3aaeeadb160a0b2e05fe844c9f2794dc63dda5001f18e",
     "skills/wayfinder/SKILL.md": "dc434094e9e4f78014537ca2adbbfb4bf901d556deb494abf8a79d8218d30c54",
     "skills/wayfinder/agents/openai.yaml": "88bc81a11a6d52ac67aeaa76b8b619e387020d47c5133a4dd4927fd15c4ad073",
     "skills/wayfinder/references/setup.md": "ddb188a8b8586af313967e2ea2cc2808b942354cb7a3b75e87a768312fb4c47a",
     "skills/wayfinder/scripts/tracker.py": "f3861c49feb4767d8c28ce4e994a693bf84307efade7f29d1c5a3609fcb2324d",
     "skills/wayfinder/scripts/validate_setup.py": "ac5ad2071bb3fd02c52ba6752de671ef89bbf0492497728534f19fc0bdb35b86",
-    "skills/wayfinder/templates/ticket-types.md": "e29ed556d7967b91ab1123cbbdf57cd53ad86366064deccdd7405971872094cf",
+    "skills/wayfinder/templates/ticket-types.md": "da9bc27a2a197cadaf400e47d7834a294e60ece0701d49db9c1ef90367de926f",
     "skills/wayfinder/templates/wayfinder.md": "954b4a0e6d08c2632a10093a051bca43f30c68902470c63dd6d09af9c81e01c2"
   }
 }
