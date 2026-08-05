@@ -21,6 +21,9 @@
     "refactor-referee": {
       "publish": true
     },
+    "spike": {
+      "publish": true
+    },
     "wayfinder": {
       "publish": true
     }

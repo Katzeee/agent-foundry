@@ -17,17 +17,17 @@ requires:
 - **Resolve:** Use a `/research` subagent. Record the findings and their sources as the answer.
 - **After creation:** Start newly-created research tickets in parallel, capturing each subagent's findings on a throwaway `research/<name>` branch with a context pointer from the ticket. Research tickets are the exception to the one-ticket-per-session limit.
 
-## prototype
+## spike
 
 <!-- wayfinder-setup
 requires:
-  - skill: prototype
-    install: npx skills@latest add mattpocock/skills --skill=prototype
+  - skill: spike
+    install: npx skills@latest add Katzeee/agent-foundry --skill=spike
 -->
 
 - **Interaction:** HITL
-- **Use when:** A cheap, rough artifact would make “how should it look?” or “how should it behave?” concrete enough for useful feedback.
-- **Resolve:** Create the artifact via `/prototype`, link it from the ticket, and resolve only through the human's reaction to it.
+- **Use when:** A concrete decision needs a temporary artifact to make evidence observable.
+- **Resolve:** Confirm the spike goal with the human if needed, run the spike, and record its evidence, artifact, and resulting decision as the answer.
 
 ## grilling
 
@@ -46,5 +46,5 @@ requires:
 ## task
 
 - **Interaction:** AFK when the agent can do the work alone; otherwise HITL.
-- **Use when:** Manual work must happen before a decision can be made, with nothing yet to decide, prototype, or research. It unblocks a decision rather than delivering the destination.
+- **Use when:** Manual work must happen before a decision can be made, with nothing yet to decide, spike, or research. It unblocks a decision rather than delivering the destination.
 - **Resolve:** Do the work where possible; otherwise give the human a precise checklist. Record what was done and any resulting facts that later tickets depend on.
