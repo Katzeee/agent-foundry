@@ -29,6 +29,6 @@ Read and follow [goal-template.md](references/goal-template.md). It is the singl
 
 ## Hand off
 
-Report the goal document's absolute path, then give the user a concise prompt they can use to start the goal. The prompt should point the next agent to the document, ask it to complete the goal, and direct it to consult the references as needed.
+Give the user a concise prompt that starts the next agent on the entire goal, with the goal document as its guide.
 
-End the invocation after presenting the path and prompt; execution belongs to the next agent.
+End the invocation after presenting the prompt; execution belongs to the next agent.
