@@ -24,6 +24,9 @@
     "spike": {
       "publish": true
     },
+    "to-goal": {
+      "publish": true
+    },
     "wayfinder": {
       "publish": true
     }
