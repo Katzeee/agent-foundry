@@ -9,6 +9,7 @@ This branch is generated from the `source` branch. Do not edit it directly.
 - `handoff`
 - `refactor-referee`
 - `spike`
+- `to-goal`
 - `wayfinder`
 
 ## Published plugins
