@@ -2,7 +2,7 @@
 
 ## Guidance
 
-<!-- Record relevant decisions, methodological guidance, cautions, escape routes, iteration policy, blocked stop condition, and links to durable references that help the agent complete the goal without redefining it. -->
+<!-- Record confirmed decisions, methodological guidance, cautions, and links to durable references. Include iteration or blocked-handling guidance when the source material establishes it. -->
 
 ## Current state
 

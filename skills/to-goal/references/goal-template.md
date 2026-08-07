@@ -2,11 +2,11 @@
 
 ## Outcome
 
-<!-- State the desired end state and scope. -->
+<!-- State the result the user intends this goal to make true and its scope. -->
 
 ## Complete when
 
-<!-- State the observable conditions that make the entire goal complete and the evidence that will establish them. Specify a verification procedure only when the user requires one. -->
+<!-- State the conditions under which the intended result counts as complete. Preserve evidence or a verification procedure when the user makes it part of the goal. -->
 
 ## Constraints
 
