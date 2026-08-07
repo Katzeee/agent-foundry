@@ -1,15 +1,21 @@
 # <Goal title>
 
-<!-- State the desired end state and scope. Include the reason only when it changes how the goal should be understood. -->
+## Outcome
 
-## Done when
+<!-- State the desired end state and scope. -->
 
-<!-- State the user's completion boundary. Include verification only when the user made it part of the goal. -->
+## Complete when
+
+<!-- State the observable conditions that make the entire goal complete and the evidence that will establish them. Specify a verification procedure only when the user requires one. -->
 
 ## Constraints
 
-<!-- State confirmed non-negotiable boundaries. Leave implementation, verification method, staffing, and sequencing open unless the user made them part of the goal. Omit this section when there are none. -->
+<!-- State constraints and boundaries that must remain true for the goal to count as complete, including confirmed limits on files, tools, data, repositories, or resources. Omit this section when there are none. -->
 
 ## References
 
-<!-- Link the documents and artifacts the next agent should consult; keep their content in the reference layer. Omit this section when there are none. -->
+<!-- Link documents and artifacts that define or govern the goal as a whole. Place a reference beside a specific outcome, completion condition, or constraint when it applies only there. Omit this section when there are none. -->
+
+## Context
+
+<!-- Link the goal context when one exists. Omit this section otherwise. -->
