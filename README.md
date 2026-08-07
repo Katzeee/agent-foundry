@@ -8,6 +8,7 @@ This is the editable source branch for the Agent Foundry skill and plugin catalo
 
 - Every directory under `skills/` must have one entry in `catalog.skills`.
 - `skills.<name>.publish: true` publishes that skill independently under `main:skills/<name>`.
+- Each entry in `catalog.skillGroups` groups independently published skills in compatible skill installers. A skill may belong to at most one group.
 - Each entry in `catalog.plugins` assembles its listed skills into one self-contained Codex and Claude Code plugin under `main:plugins/<plugin>`.
 - A skill may be independently published, included in one or more plugins, or kept plugin-only with `publish: false`.
 

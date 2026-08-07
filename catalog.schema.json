@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "XY Workflow catalog",
   "type": "object",
-  "required": ["marketplace", "publisher", "skills", "plugins"],
+  "required": ["marketplace", "publisher", "skills", "skillGroups", "plugins"],
   "additionalProperties": false,
   "properties": {
     "$schema": { "type": "string" },
@@ -32,6 +32,23 @@
         "additionalProperties": false,
         "properties": {
           "publish": { "type": "boolean" }
+        }
+      }
+    },
+    "skillGroups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "skills"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "skills": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": { "type": "string" }
+          }
         }
       }
     },

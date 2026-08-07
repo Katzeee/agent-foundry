@@ -56,6 +56,7 @@ async function validateSource(catalog) {
   if (!catalog.publisher?.name) fail("publisher.name is required");
   if (!/^https:\/\//.test(catalog.publisher?.repository ?? "")) fail("publisher.repository must be an https URL");
   if (!catalog.skills || Array.isArray(catalog.skills)) fail("skills must be an object");
+  if (!Array.isArray(catalog.skillGroups)) fail("skillGroups must be an array");
   if (!Array.isArray(catalog.plugins)) fail("plugins must be an array");
 
   const sourceDirectories = (await readdir(path.join(root, "skills"), { withFileTypes: true }))
@@ -79,10 +80,27 @@ async function validateSource(catalog) {
     await validateLinks(markdown, directory, `skills/${name}/SKILL.md`);
   }
 
+  const groupNames = new Set();
+  const groupedSkills = new Set();
+  for (const group of catalog.skillGroups) {
+    if (!slugPattern.test(group.name ?? "")) fail(`invalid skill group name: ${group.name}`);
+    if (groupNames.has(group.name)) fail(`duplicate skill group: ${group.name}`);
+    groupNames.add(group.name);
+    if (!Array.isArray(group.skills) || group.skills.length === 0) fail(`${group.name} must include at least one skill`);
+    if (new Set(group.skills).size !== group.skills.length) fail(`${group.name} contains duplicate skills`);
+    for (const skill of group.skills) {
+      if (!(skill in catalog.skills)) fail(`${group.name} references undeclared skill: ${skill}`);
+      if (!catalog.skills[skill].publish) fail(`${group.name} references non-published skill: ${skill}`);
+      if (groupedSkills.has(skill)) fail(`${skill} belongs to more than one skill group`);
+      groupedSkills.add(skill);
+    }
+  }
+
   const pluginNames = new Set();
   for (const plugin of catalog.plugins) {
     if (!slugPattern.test(plugin.name ?? "")) fail(`invalid plugin name: ${plugin.name}`);
     if (pluginNames.has(plugin.name)) fail(`duplicate plugin: ${plugin.name}`);
+    if (groupNames.has(plugin.name)) fail(`${plugin.name} is both a skill group and a plugin`);
     pluginNames.add(plugin.name);
     if (!semverPattern.test(plugin.version ?? "")) fail(`${plugin.name} has an invalid version`);
     if (!plugin.description) fail(`${plugin.name} needs a description`);
@@ -129,7 +147,15 @@ async function validateDist(catalog) {
   if (marketplace.plugins.length !== catalog.plugins.length) fail("generated marketplace plugin count is stale");
   const claudeMarketplace = await json(path.join(distRoot, ".claude-plugin", "marketplace.json"));
   if (claudeMarketplace.name !== catalog.marketplace.name) fail("generated Claude marketplace name is stale");
-  if (claudeMarketplace.plugins.length !== catalog.plugins.length) fail("generated Claude marketplace plugin count is stale");
+  if (claudeMarketplace.plugins.length !== catalog.skillGroups.length + catalog.plugins.length) {
+    fail("generated Claude marketplace entry count is stale");
+  }
+  for (const group of catalog.skillGroups) {
+    const entry = claudeMarketplace.plugins.find((candidate) => candidate.name === group.name);
+    if (!entry || entry.source !== "./") fail(`${group.name} skill group is stale`);
+    const expectedSkills = group.skills.map((skill) => `./skills/${skill}`);
+    if (JSON.stringify(entry.skills) !== JSON.stringify(expectedSkills)) fail(`${group.name} skill group members are stale`);
+  }
 
   for (const [name, config] of Object.entries(catalog.skills)) {
     if (config.publish) {

@@ -31,5 +31,19 @@
       "publish": true
     }
   },
+  "skillGroups": [
+    {
+      "name": "agent-foundry",
+      "skills": [
+        "configure-agent-guidance",
+        "domain-modeling",
+        "handoff",
+        "refactor-referee",
+        "spike",
+        "to-goal",
+        "wayfinder"
+      ]
+    }
+  ],
   "plugins": []
 }

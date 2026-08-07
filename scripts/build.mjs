@@ -49,6 +49,7 @@ async function hashes(directory) {
 
 runValidation();
 const catalog = JSON.parse(await readFile(path.join(root, "catalog.json"), "utf8"));
+const publishedSkills = Object.entries(catalog.skills).filter(([, config]) => config.publish).map(([name]) => name);
 
 if (path.dirname(distRoot) !== root || path.basename(distRoot) !== "dist") {
   throw new Error(`Refusing to clean unexpected output path: ${distRoot}`);
@@ -118,19 +119,25 @@ await writeJson(path.join(distRoot, ".agents", "plugins", "marketplace.json"), {
 await writeJson(path.join(distRoot, ".claude-plugin", "marketplace.json"), {
   $schema: "https://json.schemastore.org/claude-code-marketplace.json",
   name: catalog.marketplace.name,
-  description: `${catalog.marketplace.displayName} plugins`,
+  description: `${catalog.marketplace.displayName} skills and plugins`,
   owner: { name: catalog.publisher.name },
-  plugins: catalog.plugins.map((plugin) => ({
-    name: plugin.name,
-    source: `./plugins/${plugin.name}`,
-    description: plugin.description,
-    author: { name: catalog.publisher.name },
-    category: plugin.category.toLowerCase()
-  }))
+  plugins: [
+    ...catalog.skillGroups.map((group) => ({
+      name: group.name,
+      source: "./",
+      skills: group.skills.map((skill) => `./skills/${skill}`)
+    })),
+    ...catalog.plugins.map((plugin) => ({
+      name: plugin.name,
+      source: `./plugins/${plugin.name}`,
+      description: plugin.description,
+      author: { name: catalog.publisher.name },
+      category: plugin.category.toLowerCase()
+    }))
+  ]
 });
 
-const publishedSkills = Object.entries(catalog.skills).filter(([, config]) => config.publish).map(([name]) => name);
-const releaseReadme = `# ${catalog.marketplace.displayName}\n\nThis branch is generated from the \`source\` branch. Do not edit it directly.\n\n## Published skills\n\n${publishedSkills.map((name) => `- \`${name}\``).join("\n")}\n\n## Published plugins\n\n${catalog.plugins.map((plugin) => `- \`${plugin.name}@${plugin.version}\`: ${plugin.skills.join(", ")}`).join("\n")}\n\nDevelopment sources and build configuration live on the [\`source\` branch](${catalog.publisher.repository}/tree/source).\n`;
+const releaseReadme = `# ${catalog.marketplace.displayName}\n\nThis branch is generated from the \`source\` branch. Do not edit it directly.\n\n## Published skills\n\n${publishedSkills.map((name) => `- \`${name}\``).join("\n")}\n\n## Skill groups\n\n${catalog.skillGroups.map((group) => `- \`${group.name}\`: ${group.skills.join(", ")}`).join("\n")}\n\n## Published plugins\n\n${catalog.plugins.map((plugin) => `- \`${plugin.name}@${plugin.version}\`: ${plugin.skills.join(", ")}`).join("\n")}\n\nDevelopment sources and build configuration live on the [\`source\` branch](${catalog.publisher.repository}/tree/source).\n`;
 await writeFile(path.join(distRoot, "README.md"), releaseReadme, "utf8");
 
 await mkdir(path.join(distRoot, ".github", "workflows"), { recursive: true });
@@ -149,4 +156,4 @@ await writeJson(path.join(distRoot, "build-manifest.json"), {
   files: await hashes(distRoot)
 });
 
-console.log(`Built ${publishedSkills.length} standalone skills and ${catalog.plugins.length} plugins in dist/.`);
+console.log(`Built ${publishedSkills.length} standalone skills, ${catalog.skillGroups.length} skill groups, and ${catalog.plugins.length} plugins in dist/.`);
