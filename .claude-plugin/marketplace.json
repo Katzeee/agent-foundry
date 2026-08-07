@@ -1,9 +1,23 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "agent-foundry",
-  "description": "Agent Foundry plugins",
+  "description": "Agent Foundry skills and plugins",
   "owner": {
     "name": "Katzeee"
   },
-  "plugins": []
+  "plugins": [
+    {
+      "name": "agent-foundry",
+      "source": "./",
+      "skills": [
+        "./skills/configure-agent-guidance",
+        "./skills/domain-modeling",
+        "./skills/handoff",
+        "./skills/refactor-referee",
+        "./skills/spike",
+        "./skills/to-goal",
+        "./skills/wayfinder"
+      ]
+    }
+  ]
 }
