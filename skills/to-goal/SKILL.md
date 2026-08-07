@@ -11,7 +11,7 @@ Write a goal that makes the result the user wants unmistakable to the next agent
 
 Read the current conversation as the primary source of intent, then read the documents and artifacts the user names or the goal depends on. Use arguments to focus that reading. When sources conflict, the user's latest explicit decision controls.
 
-Identify the result the user wants and its completion boundary. Keep confirmed constraints that affect whether the result counts as complete; place details that only guide how to achieve it in the goal context.
+Identify a checkable finish line for the result the user wants. Keep confirmed constraints that affect whether the result counts as complete; place details that only guide how to achieve it in the goal context.
 
 If missing or contradictory information leaves the intended result or its completion boundary materially ambiguous, stop before writing files and tell the user which reference or decision is missing. The goal is clear enough to write when the next agent can identify the intended result and its completion boundary without choosing between competing interpretations.
 
@@ -33,7 +33,9 @@ Read and follow [goal-template.md](references/goal-template.md). It is the singl
 
 Reread the finished goal against the user's latest intent and its governing references. Revise it if anything the user wants is missing, anything they did not ask for has become part of the goal, or the completion boundary is ambiguous.
 
-The check is complete when the next agent can tell exactly what must be true for the goal to be complete without choosing between competing interpretations.
+Read Outcome and Complete when together. They must describe the same finish line: the goal cannot be complete without the intended result, or remain incomplete once that result and its constraints are confirmed.
+
+The check is complete when the next agent can use the named evidence to decide whether the finish line has been reached without choosing between competing interpretations.
 
 ## Hand off
 

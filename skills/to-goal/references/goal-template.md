@@ -6,7 +6,7 @@
 
 ## Complete when
 
-<!-- State the conditions under which the intended result counts as complete. Preserve evidence or a verification procedure when the user makes it part of the goal. -->
+<!-- State a checkable finish line for the intended result and name the evidence that will confirm it has been reached. Keep the path to that result open. -->
 
 ## Constraints
 
