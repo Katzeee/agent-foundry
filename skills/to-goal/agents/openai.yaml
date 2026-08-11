@@ -1,6 +1,6 @@
 interface:
   display_name: "To Goal"
-  short_description: "Write a goal with a clear finish line"
-  default_prompt: "Use $to-goal to write a goal with a clear completion condition and give me a prompt to start it."
+  short_description: "Write a goal with a checkable finish line"
+  default_prompt: "Use $to-goal to write a goal with a checkable finish line and give me a prompt to start it."
 policy:
   allow_implicit_invocation: false
