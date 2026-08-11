@@ -1,44 +1,52 @@
 ---
 name: to-goal
-description: Write a compact goal with a clear completion condition and a prompt to start it.
+description: Write a goal with a checkable finish line and a prompt to start it.
 argument-hint: "Goal focus or reference paths"
 disable-model-invocation: true
 ---
 
-Write a goal that makes the result the user wants unmistakable to the next agent. The goal must answer: what exactly should be true when this work is finished? Keep implementation guidance and current state in a goal context when needed.
+A **goal** is one durable objective paired with a completion condition that something other than the working agent can check. The agent keeps working turn after turn without being re-prompted, and stops when that condition is judged met.
+
+Three properties of that loop shape everything below:
+
+- Continuing is its default action; returning control to the user is an exception, not a step the document can schedule.
+- Completion is judged by a checker that did not do the work and does not share the reasoning behind it.
+- The harness is not guaranteed to carry the objective past this session, so the document is what holds it.
+
+This skill writes that document and hands back a prompt to start it.
 
 ## Establish the goal
 
-Read the current conversation as the primary source of intent, then read the documents and artifacts the user names or the goal depends on. Use arguments to focus that reading. When sources conflict, the user's latest explicit decision controls.
+Read the current conversation as the primary source of intent, then the documents and artifacts the user names or the goal depends on. Use arguments to focus that reading. When sources conflict, the user's latest explicit decision controls.
 
-Identify a checkable finish line for the result the user wants. Keep confirmed constraints that affect whether the result counts as complete; place details that only guide how to achieve it in the goal context.
+Name one objective. When the intent covers several results that do not share a finish line, have the user pick the one this goal is for. When the finish line cannot be stated yet, or one turn of ordinary work would reach it, say which part of the definition the work fails and stop.
 
-If missing or contradictory information leaves the intended result or its completion boundary materially ambiguous, stop before writing files and tell the user which reference or decision is missing. The goal is clear enough to write when the next agent can identify the intended result and its completion boundary without choosing between competing interpretations.
+The goal is **ready** when it runs unattended: the document names what the work depends on, every input and reference is obtainable by the agent without user action, every permission it needs is already granted, and the finish line can be judged by a checker that did not do the work. Settle whatever keeps it from being ready with the user before writing files.
 
-## Prepare the documents
+## Write the goal document
 
-Resolve the goal document's location from the user's request or project guidance. If neither provides one, ask the user where to save it before writing files.
+Resolve the location from the user's request or project guidance. Ask before writing files when neither provides one.
 
-Use existing durable documents through links. When the next agent needs guidance or current state beyond the goal itself, read and follow [goal-context-template.md](references/goal-context-template.md) to create `<goal-stem>-context.md` beside the goal.
+Read and follow [goal-template.md](references/goal-template.md). It is the single source of truth for the document's contents.
 
-Keep goal-defining details and references in the goal; place implementation guidance and its references in the context. Keep substantial source material in its existing document or a focused supporting document.
+Write the finish line for that checker: it decides yes or no without redoing the work or reconstructing why the evidence matters. What form that takes follows the goal — a command's outcome, a threshold, a state of the tree, or an artifact and the standard its content must meet. Fix what must be true, and leave the route to it open.
 
-Preparation is complete when the output location is resolved and any needed context provides the guidance and current state without redefining the goal.
+## Add context when needed
 
-## Write the goal
+When the agent needs guidance or current state beyond the goal itself, read and follow [goal-context-template.md](references/goal-context-template.md) and create `<goal-stem>-context.md` beside the goal document, where `<goal-stem>` is that document's filename without its extension. Link it from References.
 
-Read and follow [goal-template.md](references/goal-template.md). It is the single source of truth for the goal document's contents. The document is complete when it states the intended result, its completion boundary, and any relevant constraints and governing references without relying on the context to explain what the goal is. Link the goal context when one was created.
+The goal document stays self-sufficient about what the goal is and when it is complete; the context says how to pursue it and where the work stands. Keep substantial source material in its existing document or a focused supporting one, and reach it through links.
 
 ## Check the goal
 
-Reread the finished goal against the user's latest intent and its governing references. Revise it if anything the user wants is missing, anything they did not ask for has become part of the goal, or the completion boundary is ambiguous.
+Reread everything written in this invocation — the goal document, its context, and any supporting document — against the user's latest intent and its governing references. Revise them if anything the user wants is missing, anything they did not ask for has become part of the goal, or the goal no longer runs unattended.
 
-Read Outcome and Complete when together. They must describe the same finish line: the goal cannot be complete without the intended result, or remain incomplete once that result and its constraints are confirmed.
+Read Outcome and Complete when together: Complete when is Outcome made checkable — the same result in a form the checker can judge, neither more nor less.
 
-The check is complete when the next agent can use the named evidence to decide whether the finish line has been reached without choosing between competing interpretations.
+The check is done when the goal is ready and a checker with no memory of this conversation could return a defensible yes or no from the named evidence.
 
 ## Hand off
 
-Give the user a concise prompt that starts a persistent Goal for the entire result defined in the goal document.
+**Do not start the goal in this invocation.**
 
-End the invocation after presenting the prompt; execution belongs to the next agent.
+Give the user one compact prompt they can paste to start it. It points at the goal document by path, states that the objective is the entire result that document defines, and, when a context exists, points at it and tells the agent to keep it current.
