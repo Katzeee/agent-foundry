@@ -1,7 +1,7 @@
 {
   "sourceBranch": "source",
-  "sourceCommit": "e58b6fc8565c544c545c5f57f9f8cc9947da1baa",
-  "sourceDate": "2026-08-11T19:50:00+08:00",
+  "sourceCommit": "81c4ef5002d91632a33c7329d2ec7e96ed8733ca",
+  "sourceDate": "2026-08-12T14:01:36+08:00",
   "sourceDirty": false,
   "files": {
     ".agents/plugins/marketplace.json": "f162963c1cd62d2540170bff25e7aca120a0e673a24ea28dd9ff01e08a4d6469",
@@ -10,6 +10,7 @@
     "README.md": "d899dae42f4c0242d78196032bbeff3cb33fc75b36e96b0737787cae8297ad86",
     "skills/configure-agent-guidance/SKILL.md": "bfbda47fd31350f3608e99dd2a04c7762b1357d51dec81f8b941e80fa695fb54",
     "skills/configure-agent-guidance/agents/openai.yaml": "ef910042d431b503549aed93a1abe753aa4035fb8c7390168dae0803bfd5d702",
+    "skills/configure-agent-guidance/templates/living-docs.md": "9fbdbc379d1cec730a57907450651204c80a3ca7b58afb58e930365b62048229",
     "skills/configure-agent-guidance/templates/present-tense.md": "bbc0fd754a082aa9c14cac65208f321ba521ee23674ea7f6aa01cfbe9754ec86",
     "skills/configure-agent-guidance/templates/writing-style.md": "3445cecc3e7c5b8c8867985b4ea9c7a7d9bd7a6d7fedc51e4fe7772b0788ce24",
     "skills/domain-modeling/CONTEXT-FORMAT.md": "b8cc318f2a4285b530e908b6bc43901c3c5cd11100362636bbc4216639bef597",
