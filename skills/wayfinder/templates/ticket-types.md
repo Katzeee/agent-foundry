@@ -41,7 +41,7 @@ requires:
 
 - **Interaction:** HITL
 - **Use when:** A decision needs focused conversation. This is the default type.
-- **Resolve:** Use `/grilling` and `/domain-modeling`, one question at a time. Resolve only through the live exchange.
+- **Resolve:** Use `/grilling` and `/domain-modeling`, one question at a time, with the map's `domain.md` as the active glossary. Resolve only through the live exchange.
 
 ## task
 

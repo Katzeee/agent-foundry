@@ -8,7 +8,7 @@ Each map lives at `<tracker-root>/<map>/map.md`, with its domain language in `<t
 
 ## Wayfinding methods
 
-- **Clarify**: use `/grilling` and `/domain-modeling` together.
+- **Clarify**: use `/grilling` and `/domain-modeling` together, with the map's `domain.md` as the active glossary.
 
 ## Tracker operations
 
