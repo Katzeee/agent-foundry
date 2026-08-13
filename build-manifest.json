@@ -1,7 +1,7 @@
 {
   "sourceBranch": "source",
-  "sourceCommit": "81c4ef5002d91632a33c7329d2ec7e96ed8733ca",
-  "sourceDate": "2026-08-12T14:01:36+08:00",
+  "sourceCommit": "5ca8ef0a7d7b6bd928ed962c702f43a4c5015742",
+  "sourceDate": "2026-08-13T17:13:31+08:00",
   "sourceDirty": false,
   "files": {
     ".agents/plugins/marketplace.json": "f162963c1cd62d2540170bff25e7aca120a0e673a24ea28dd9ff01e08a4d6469",
@@ -13,8 +13,8 @@
     "skills/configure-agent-guidance/templates/living-docs.md": "9fbdbc379d1cec730a57907450651204c80a3ca7b58afb58e930365b62048229",
     "skills/configure-agent-guidance/templates/present-tense.md": "bbc0fd754a082aa9c14cac65208f321ba521ee23674ea7f6aa01cfbe9754ec86",
     "skills/configure-agent-guidance/templates/writing-style.md": "3445cecc3e7c5b8c8867985b4ea9c7a7d9bd7a6d7fedc51e4fe7772b0788ce24",
-    "skills/domain-modeling/CONTEXT-FORMAT.md": "b8cc318f2a4285b530e908b6bc43901c3c5cd11100362636bbc4216639bef597",
-    "skills/domain-modeling/SKILL.md": "6eab107218b76da2216da0660e78f282cd5d8274511118d4e5b61ed7ca96057d",
+    "skills/domain-modeling/PROJECT-GLOSSARY.md": "f8ac6918e094a0d29695677086d6277cf63b3032a43260584e282c73f36b1209",
+    "skills/domain-modeling/SKILL.md": "ccf368ec9f5e948f25620c0506fec392fad7955e5cd850a9b21a168c46be6cb5",
     "skills/handoff/SKILL.md": "61449340cdd260162d0b4ec2c1cbd4da7e5885057bd67a21c024eb710fbfde6b",
     "skills/handoff/agents/openai.yaml": "5c479fd562c691851690e8b18c8501045bef0943c10743d636b2fae26add1d28",
     "skills/refactor-referee/SKILL.md": "45e3e63c90da3c2f71dcd0a4b7ffe7db0c73e7b94bd3e60a023c30822bc04f6a",
@@ -25,12 +25,12 @@
     "skills/to-goal/agents/openai.yaml": "ca305e1dd79184914fd8dbef3cadd9cee7b27ffaeeee32b03c7276ffc6944a0f",
     "skills/to-goal/references/goal-context-template.md": "9f8c76db6f9bf8317483777ec4478528e4b882a5e877ee10e511f328d8b7d5a9",
     "skills/to-goal/references/goal-template.md": "aac4c85dbf960258cd50ca9c935bcc95b6b4aafc5c9ef8f36b4f012ccb0742fa",
-    "skills/wayfinder/SKILL.md": "90c1079918598b2e35139cbcbf8c22439a45332de750b10aae96c27abbcbf8dd",
+    "skills/wayfinder/SKILL.md": "91c69ec868f7991f59d985b8288db4de61e29a86ba53fdbd7d525f9e52012a1b",
     "skills/wayfinder/agents/openai.yaml": "88bc81a11a6d52ac67aeaa76b8b619e387020d47c5133a4dd4927fd15c4ad073",
     "skills/wayfinder/references/setup.md": "3f079526830eeb4a51c472d7787ac65fb4d55a54b23bd3aed7a301081748cf2e",
-    "skills/wayfinder/scripts/tracker.py": "f3861c49feb4767d8c28ce4e994a693bf84307efade7f29d1c5a3609fcb2324d",
+    "skills/wayfinder/scripts/tracker.py": "12e973522042dd1d76fe88e046c14a3b044a602b543d1778ebef50b5c8a214a8",
     "skills/wayfinder/scripts/validate_setup.py": "ac5ad2071bb3fd02c52ba6752de671ef89bbf0492497728534f19fc0bdb35b86",
-    "skills/wayfinder/templates/ticket-types.md": "da9bc27a2a197cadaf400e47d7834a294e60ece0701d49db9c1ef90367de926f",
-    "skills/wayfinder/templates/wayfinder.md": "954b4a0e6d08c2632a10093a051bca43f30c68902470c63dd6d09af9c81e01c2"
+    "skills/wayfinder/templates/ticket-types.md": "aa12722d4d1f41fdc8dc2cb9aad9a4e26b32a60b9c6f0dd0e669b3dde372d940",
+    "skills/wayfinder/templates/wayfinder.md": "d65eb7e77eebec63c81ddcf5846b8187fd177a746dc394ae65b2cc23fb566b8d"
   }
 }

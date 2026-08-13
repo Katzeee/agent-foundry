@@ -1,42 +1,38 @@
 ---
 name: domain-modeling
-description: Build and sharpen domain language. Use when Wayfinder needs a domain model scoped to its active map, or when the user explicitly asks to create or maintain a persistent project domain model or ubiquitous language.
+description: Ubiquitous language — build and sharpen it while a design is still moving. Use when terms collide, blur, or drift from the code, or when the user asks to create or maintain a glossary.
 ---
 
-# Domain Modeling
-
-Actively build and sharpen the project's domain model as you design. This is the *active* discipline — challenging terms, inventing edge-case scenarios, and writing the glossary down the moment terms crystallise. (Merely reading a glossary for vocabulary is not this skill — that's a one-line habit any skill can do. This skill is for when you're changing the model, not just consuming it.)
-
-## Choose the mode
-
-Select one mode before persisting.
-
-Use **Wayfinder mode** while Wayfinder is clarifying a destination, mapping a frontier, or resolving a ticket. Scope persistence to the active map's existing `domain.md`, beside its `map.md`.
-
-Use **persistent mode** when the user explicitly asks to create or maintain a project-level domain model or ubiquitous language. Scope persistence to the applicable project-level `CONTEXT.md` files.
-
-Use [CONTEXT-FORMAT.md](./CONTEXT-FORMAT.md) for the glossary structure and rules in both modes. In persistent mode, also follow its single- and multi-context discovery rules. When neither mode applies, remain read-only.
+Build and sharpen the **ubiquitous language** while the design is still moving: challenge the words as they are used.
 
 ## During the session
 
-### Challenge against the glossary
+- **Challenge collisions.** When a term is used against the glossary's definition, say so at once: "Your glossary defines 'cancellation' as X, but you seem to mean Y — which is it?"
+- **Split overloaded terms.** One word carrying two concepts becomes two canonical names: "You're saying 'account' — do you mean the Customer or the User? Those are different things."
+- **Collapse synonyms.** Several words for one concept get one winner; the rest go under its `_Avoid_` list.
+- **Stress-test with scenarios.** Invent concrete cases that probe the edges of a relationship, and make the user state where one concept stops and the next begins.
+- **Cross-reference the code.** When the user says how something works, check whether the code agrees and surface the contradiction: "Your code cancels entire Orders, but you just said partial cancellation is possible — which is right?"
+- **Write each term as it settles**, never in a batch at the end.
 
-When the user uses a term that conflicts with the active glossary, call it out immediately. "Your glossary defines 'cancellation' as X, but you seem to mean Y — which is it?"
+## Writing it down
 
-### Sharpen fuzzy language
+Every term this session settles lands in one glossary — the **active glossary**. Pick it before writing anything:
 
-When the user uses vague or overloaded terms, propose a precise canonical term. "You're saying 'account' — do you mean the Customer or the User? Those are different things."
+- When the invocation names one — a calling skill, the user, or notes the session loaded — it is the only glossary this session writes.
+- Otherwise it is the project glossary: the `CONTEXT.md` of the **bounded context** the topic belongs to. Use [PROJECT-GLOSSARY.md](./PROJECT-GLOSSARY.md) to locate it, and to create one when the user asks for a glossary.
+- When the repo has no glossary and the user has not asked for one, stay read-only: sharpen the language in the conversation, gather the terms you settled into your reply, and offer to write them down.
 
-### Discuss concrete scenarios
+Write only inside its `## Language` section, one entry per term:
 
-When domain relationships are being discussed, stress-test them with specific scenarios. Invent scenarios that probe edge cases and force the user to be precise about the boundaries between concepts.
+```md
+**Order**:
+A customer's request for goods, priced and accepted but not yet shipped.
+_Avoid_: Purchase, transaction
+```
 
-### Cross-reference with code
+- **Be opinionated.** When several words exist for one concept, pick the best and list the rest under `_Avoid_`.
+- **Keep definitions tight.** One or two sentences in the words a domain expert would use. Define what it IS, not what it does or how it is stored.
+- **Admit only terms this context owns.** General programming concepts — timeouts, error types, utility patterns — stay out however heavily the project uses them. Before adding a term, ask whether the concept is unique to this context.
+- **Group under subheadings** when natural clusters emerge; a flat list is right when every term belongs to one cohesive area.
 
-When the user states how something works, check whether the code agrees. If you find a contradiction, surface it: "Your code cancels entire Orders, but you just said partial cancellation is possible — which is right?"
-
-### Update the glossary inline
-
-When a term is resolved, update the active mode's glossary right there. Don't batch these up — capture them as they happen. In Wayfinder mode, update the existing `domain.md`; in persistent mode, update the applicable `CONTEXT.md`.
-
-The glossary should be totally devoid of implementation details. Do not treat it as a spec, scratch pad, decision log, or implementation document. It is a glossary and nothing else.
+**Completion:** every domain term this session used is now defined in the glossary, left as a stated open question, or rejected as one this context does not own — with no glossary in play, gathered into the reply instead; every collision raised is settled or recorded as an open question; every claim about how the code works was checked against the code; the glossary holds names and definitions and nothing else.

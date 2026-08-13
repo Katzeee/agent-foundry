@@ -19,6 +19,7 @@ TRACKER_ROOT_RE = re.compile(r"^Tracker root:\s*`([^`]+)`\s*$", re.MULTILINE)
 TICKET_FILE_RE = re.compile(r"^(\d+)-([a-z0-9]+(?:-[a-z0-9]+)*)\.md$")
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 STATES = {"open", "claimed", "closed"}
+MAP_STATES = {"open", "reached"}
 MAP_HEADINGS = (
     "Destination",
     "Notes",
@@ -58,6 +59,7 @@ class MapData:
     directory: Path
     path: Path
     title: str
+    state: str
     destination: str
     tickets: list[Ticket]
     index_entries: list[IndexEntry]
@@ -189,9 +191,33 @@ def pre_question_metadata(content: str) -> str:
     return content[: match.start()] if match else content
 
 
+def pre_section_metadata(content: str) -> str:
+    match = re.search(r"^##\s+", content, re.MULTILINE)
+    return content[: match.start()] if match else content
+
+
+def set_map_state(content: str, state: str) -> str:
+    metadata = pre_section_metadata(content)
+    if re.search(r"^State:[ \t]*.*$", metadata, re.MULTILINE):
+        updated = re.sub(
+            r"^State:[ \t]*.*$", f"State: {state}", metadata, count=1, flags=re.MULTILINE
+        )
+        return updated + content[len(metadata) :]
+    title = re.search(r"^#[ \t]+.+?[ \t]*$", content, re.MULTILINE)
+    if title is None:
+        raise TrackerError("map.md: cannot record State without a Map title")
+    head = content[: title.end()]
+    tail = content[title.end() :].lstrip("\n")
+    return f"{head}\n\nState: {state}\n\n{tail}"
+
+
 def field(content: str, name: str) -> str | None:
     match = re.search(rf"^{re.escape(name)}:[ \t]*(.*?)[ \t]*$", content, re.MULTILINE)
     return match.group(1).strip() if match else None
+
+
+def map_state(content: str) -> str:
+    return field(pre_section_metadata(content), "State") or "open"
 
 
 def is_placeholder(value: str | None) -> bool:
@@ -354,6 +380,13 @@ def parse_map(map_dir: Path) -> tuple[MapData | None, list[str]]:
 
     title = first_h1(content)
     destination = section(content, "Destination")
+    metadata = pre_section_metadata(content)
+    state = map_state(content)
+    if len(re.findall(r"^State:[ \t]*.*$", metadata, re.MULTILINE)) > 1:
+        errors.append("map.md: must contain at most one `State:` field before the first section")
+    if state not in MAP_STATES:
+        errors.append(f"map.md: State must be one of: {', '.join(sorted(MAP_STATES))}")
+        state = "open"
     if h1_count(content) != 1 or is_placeholder(title):
         errors.append("map.md: missing Map title")
     if is_placeholder(destination):
@@ -422,6 +455,11 @@ def parse_map(map_dir: Path) -> tuple[MapData | None, list[str]]:
 
     errors.extend(validate_dag(tickets))
     errors.extend(validate_index_entries(map_dir, tickets, index_entries))
+    if state == "reached":
+        errors.extend(
+            f"map.md: reached Map still has work — {reason}"
+            for reason in unreached_reasons(tickets, content)
+        )
 
     tracked_files = [map_path, *([domain_path] if domain_path.is_file() else []), *ticket_files]
     updated_at = max((path.stat().st_mtime for path in tracked_files), default=map_path.stat().st_mtime)
@@ -429,11 +467,26 @@ def parse_map(map_dir: Path) -> tuple[MapData | None, list[str]]:
         directory=map_dir,
         path=map_path,
         title=title,
+        state=state,
         destination=destination or "",
         tickets=tickets,
         index_entries=index_entries,
         updated_at=updated_at,
     ), errors
+
+
+def unreached_reasons(tickets: list[Ticket], content: str) -> list[str]:
+    """Everything that still stands between a Map and its destination."""
+    reasons = [
+        f"Ticket {ticket.number_text} {ticket.title} is {ticket.state}"
+        for ticket in sorted(
+            (ticket for ticket in tickets if ticket.state != "closed"),
+            key=lambda ticket: ticket.number,
+        )
+    ]
+    if not is_placeholder(section(content, "Not yet specified")):
+        reasons.append("`Not yet specified` still holds fog")
+    return reasons
 
 
 def validate_index_entries(
@@ -587,9 +640,12 @@ def command_collect(args: argparse.Namespace) -> int:
     print(f"Tracker root: `{repo_relative(tracker_root, repo_root)}`")
     print(f"Maps found: {len(maps)}")
     if maps:
-        print("Order: latest activity first")
+        print("Order: open maps by latest activity, then reached titles")
 
-    for map_data in maps:
+    open_maps = [map_data for map_data in maps if map_data.state != "reached"]
+    reached_maps = [map_data for map_data in maps if map_data.state == "reached"]
+
+    for map_data in open_maps:
         ticket_by_number = {ticket.number: ticket for ticket in map_data.tickets}
         frontier = [
             ticket
@@ -616,6 +672,7 @@ def command_collect(args: argparse.Namespace) -> int:
         print()
         print(f"Path: `{repo_relative(map_data.path, repo_root)}`")
         print(f"Updated: `{updated}`")
+        print(f"State: `{map_data.state}`")
         print()
         print(f"Destination: {compact_text(map_data.destination) or '(missing)'}")
         print()
@@ -639,6 +696,13 @@ def command_collect(args: argparse.Namespace) -> int:
                 print(f"- `{ticket.number_text}` {ticket.title} — {ticket.ticket_type}")
         else:
             print("None.")
+
+    if reached_maps:
+        print()
+        print("## Reached")
+        print()
+        for map_data in reached_maps:
+            print(f"- {map_data.title or map_data.directory.name}")
 
     if diagnostics:
         print()
@@ -674,6 +738,8 @@ def command_create_map(args: argparse.Namespace) -> int:
     domain_path = map_dir / "domain.md"
     content = """# <Map title>
 
+State: open
+
 ## Destination
 
 <what reaching the end of this map looks like>
@@ -708,6 +774,8 @@ def command_create_ticket(args: argparse.Namespace) -> int:
     repo_root = find_repo_root()
     tracker_root = load_tracker_root(repo_root)
     map_dir = resolve_map_dir(tracker_root, args.map)
+    if map_state(read_text(map_dir / "map.md")) == "reached":
+        raise TrackerError("Map is reached; chart a new Map for work that comes after it.")
     ticket_type = validate_type_name(args.type)
     allowed_types = configured_ticket_types(repo_root)
     if ticket_type not in allowed_types:
@@ -739,6 +807,30 @@ Blocked by:
 """
     write_text(issue_path, content)
     print(repo_relative(issue_path, repo_root))
+    return 0
+
+
+def command_close_map(args: argparse.Namespace) -> int:
+    repo_root = find_repo_root()
+    tracker_root = load_tracker_root(repo_root)
+    map_dir = resolve_map_dir(tracker_root, args.map)
+    map_data, errors = parse_map(map_dir)
+    if map_data is not None:
+        errors.extend(validate_ticket_types(map_data, configured_ticket_types(repo_root)))
+    if map_data is None or errors:
+        listing = "".join(f"\n- {message}" for message in errors)
+        raise TrackerError(f"Map must be valid before it can be closed:{listing}")
+    if map_data.state == "reached":
+        raise TrackerError(f"Map is already reached: {repo_relative(map_data.path, repo_root)}")
+
+    content = read_text(map_data.path)
+    reasons = unreached_reasons(map_data.tickets, content)
+    if reasons:
+        listing = "".join(f"\n- {reason}" for reason in reasons)
+        raise TrackerError(f"Map is not ready to close:{listing}")
+
+    write_text(map_data.path, set_map_state(content, "reached"))
+    print(repo_relative(map_data.path, repo_root))
     return 0
 
 
@@ -789,6 +881,12 @@ def build_parser() -> argparse.ArgumentParser:
     ticket_parser.add_argument("type", help="Configured Ticket Type")
     ticket_parser.add_argument("slug", help="Ticket filename slug")
     ticket_parser.set_defaults(handler=command_create_ticket)
+
+    close_parser = subparsers.add_parser(
+        "close-map", help="Record a Map as reached once nothing is left to decide"
+    )
+    close_parser.add_argument("map", help="Map directory name")
+    close_parser.set_defaults(handler=command_close_map)
 
     validate_parser = subparsers.add_parser(
         "validate", help="Validate local tracker structure and the blocking DAG"
