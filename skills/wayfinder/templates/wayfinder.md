@@ -12,7 +12,7 @@ Each map lives at `<tracker-root>/<map>/map.md`, with its domain language in `<t
 
 ## Tracker operations
 
-- **Collect context**: run `python <wayfinder-cli> collect`. It creates the Tracker root if needed and prints a low-resolution index across all maps, newest activity first. Choose a map from that index, then read its `map.md`. Frontier tickets are ordered by number.
+- **Collect context**: run `python <wayfinder-cli> collect`. It creates the Tracker root if needed and prints a low-resolution index of open maps, newest activity first, then reached maps as titles only. Choose a map from that index, then read its `map.md`. Frontier tickets are ordered by number.
 - **Read map**: read `<tracker-root>/<map>/map.md` after choosing a map from the collected index.
 - **Read ticket**: read `<tracker-root>/<map>/issues/NN-<type>-<slug>.md` when a ticket's question, answer, or other detail is needed.
 - **Create map**: run `python <wayfinder-cli> create-map <slug>`. It creates `map.md`, `domain.md`, and `issues/`; fill every section in `map.md` and record the confirmed domain language in `domain.md`.
@@ -21,7 +21,12 @@ Each map lives at `<tracker-root>/<map>/map.md`, with its domain language in `<t
 - **Claim**: change an open frontier ticket's `State:` to `claimed` before beginning work. Change it back to `open` to release the claim without closing the ticket.
 - **Resolve**: update the ticket and map as one coherent change: add a non-empty `## Answer`, change `State:` to `closed`, add its linked one-line gist to **Decisions so far**, and graduate any now-specific fog into new tickets.
 - **Rule out of scope**: update the ticket and map as one coherent change: add the exclusion reason as its non-empty `## Answer`, change `State:` to `closed`, and add its linked gist plus exclusion reason to **Out of scope**. Do not add it to **Decisions so far**.
+- **Close map**: run `python <wayfinder-cli> close-map <map>`. It records the Map as reached, and refuses while any Ticket is open or claimed or while **Not yet specified** still holds fog.
 - **Validate**: run `python <wayfinder-cli> validate [map]`; repair every reported error before treating the map as a valid tracker state.
+
+Map fields:
+
+- `State`: `open` or `reached`; a Map with no `State:` field is `open`
 
 Ticket fields:
 
