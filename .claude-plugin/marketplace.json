@@ -15,6 +15,7 @@
         "./skills/handoff",
         "./skills/refactor-referee",
         "./skills/spike",
+        "./skills/test-review",
         "./skills/to-goal",
         "./skills/wayfinder"
       ]

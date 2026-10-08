@@ -9,12 +9,13 @@ This branch is generated from the `source` branch. Do not edit it directly.
 - `handoff`
 - `refactor-referee`
 - `spike`
+- `test-review`
 - `to-goal`
 - `wayfinder`
 
 ## Skill groups
 
-- `agent-foundry`: configure-agent-guidance, domain-modeling, handoff, refactor-referee, spike, to-goal, wayfinder
+- `agent-foundry`: configure-agent-guidance, domain-modeling, handoff, refactor-referee, spike, test-review, to-goal, wayfinder
 
 ## Published plugins
 
