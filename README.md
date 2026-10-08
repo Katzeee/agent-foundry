@@ -54,7 +54,7 @@ The distribution also contains `.agents/plugins/marketplace.json` for Codex and 
 
 ## Publishing
 
-Pull requests and edits target `source`. Pushes do not run GitHub Actions. Publishing is started manually from the Actions tab on the `source` branch. The workflow exits after checkout when that commit is already recorded in `main:build-manifest.json`; otherwise, it validates the source, replaces the `main` worktree with `dist/`, and creates a release commit. Its `force` input rebuilds an already-published source commit.
+Target `source` for edits and pull requests, and run `npm run check` before publishing. Start the publishing workflow manually from the Actions tab on `source`; pushes do not publish. Use `force` to rebuild a source commit that is already published.
 
 The repository must allow the workflow `GITHUB_TOKEN` to write repository contents. If `main` has branch protection, allow this publishing workflow or its GitHub Actions bot to update the branch.
 

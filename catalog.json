@@ -24,6 +24,9 @@
     "spike": {
       "publish": true
     },
+    "test-review": {
+      "publish": true
+    },
     "to-goal": {
       "publish": true
     },
@@ -40,6 +43,7 @@
         "handoff",
         "refactor-referee",
         "spike",
+        "test-review",
         "to-goal",
         "wayfinder"
       ]
