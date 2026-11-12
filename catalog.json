@@ -15,6 +15,9 @@
     "domain-modeling": {
       "publish": true
     },
+    "maintain-fork": {
+      "publish": true
+    },
     "handoff": {
       "publish": true
     },
@@ -40,6 +43,7 @@
       "skills": [
         "configure-agent-guidance",
         "domain-modeling",
+        "maintain-fork",
         "handoff",
         "refactor-referee",
         "spike",
