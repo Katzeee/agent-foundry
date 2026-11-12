@@ -12,6 +12,7 @@
       "skills": [
         "./skills/configure-agent-guidance",
         "./skills/domain-modeling",
+        "./skills/maintain-fork",
         "./skills/handoff",
         "./skills/refactor-referee",
         "./skills/spike",
