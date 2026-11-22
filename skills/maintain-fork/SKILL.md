@@ -3,7 +3,7 @@ name: maintain-fork
 description: Develop in a long-lived fork while syncing upstream. Use when branching or merging work in a fork, syncing upstream, resolving upstream conflicts, or deciding where fork-only code goes.
 ---
 
-# Maintain a Git Fork
+# maintain-fork
 
 A fork stays maintainable when its changes and upstream's rarely touch the same lines, and when upstream is merged in small, frequent steps.
 
