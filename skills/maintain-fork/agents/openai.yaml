@@ -1,5 +1,5 @@
 interface:
-  display_name: "Maintain a Git Fork"
+  display_name: "maintain-fork"
   short_description: "Develop in a long-lived fork while syncing upstream"
 
 policy:
