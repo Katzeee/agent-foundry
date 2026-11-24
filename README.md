@@ -4,6 +4,7 @@ This branch is generated from the `source` branch. Do not edit it directly.
 
 ## Published skills
 
+- `second-pass`
 - `configure-agent-guidance`
 - `domain-modeling`
 - `maintain-fork`
@@ -16,7 +17,7 @@ This branch is generated from the `source` branch. Do not edit it directly.
 
 ## Skill groups
 
-- `agent-foundry`: configure-agent-guidance, domain-modeling, maintain-fork, handoff, refactor-referee, spike, test-review, to-goal, wayfinder
+- `agent-foundry`: second-pass, configure-agent-guidance, domain-modeling, maintain-fork, handoff, refactor-referee, spike, test-review, to-goal, wayfinder
 
 ## Published plugins
 

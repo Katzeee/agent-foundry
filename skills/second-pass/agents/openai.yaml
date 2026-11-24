@@ -1,0 +1,6 @@
+interface:
+  display_name: "Second Pass"
+  short_description: "Review coupling exposed by a recent change"
+  default_prompt: "Use $second-pass to review the latest change and propose abstractions that make similar changes more focused."
+policy:
+  allow_implicit_invocation: false

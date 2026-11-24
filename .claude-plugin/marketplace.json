@@ -10,6 +10,7 @@
       "name": "agent-foundry",
       "source": "./",
       "skills": [
+        "./skills/second-pass",
         "./skills/configure-agent-guidance",
         "./skills/domain-modeling",
         "./skills/maintain-fork",
