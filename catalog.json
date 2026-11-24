@@ -9,6 +9,9 @@
     "repository": "https://github.com/Katzeee/agent-foundry"
   },
   "skills": {
+    "second-pass": {
+      "publish": true
+    },
     "configure-agent-guidance": {
       "publish": true
     },
@@ -41,6 +44,7 @@
     {
       "name": "agent-foundry",
       "skills": [
+        "second-pass",
         "configure-agent-guidance",
         "domain-modeling",
         "maintain-fork",
