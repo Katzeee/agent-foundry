@@ -1,7 +1,7 @@
 {
   "sourceBranch": "source",
-  "sourceCommit": "6e3f49ec4c85d7a6808215d9137f6a4ee904a221",
-  "sourceDate": "2026-11-24T14:56:11+08:00",
+  "sourceCommit": "05ec019f30cef945a52a621035bec81e3b016c59",
+  "sourceDate": "2026-11-26T00:41:21+08:00",
   "sourceDirty": false,
   "files": {
     ".agents/plugins/marketplace.json": "f162963c1cd62d2540170bff25e7aca120a0e673a24ea28dd9ff01e08a4d6469",
@@ -19,7 +19,7 @@
     "skills/domain-modeling/SKILL.md": "ccf368ec9f5e948f25620c0506fec392fad7955e5cd850a9b21a168c46be6cb5",
     "skills/handoff/SKILL.md": "61449340cdd260162d0b4ec2c1cbd4da7e5885057bd67a21c024eb710fbfde6b",
     "skills/handoff/agents/openai.yaml": "5c479fd562c691851690e8b18c8501045bef0943c10743d636b2fae26add1d28",
-    "skills/maintain-fork/SKILL.md": "a16648348c950c73238373ac7689081c693b7f12fbfc7169df6cb114cc16d6ca",
+    "skills/maintain-fork/SKILL.md": "87efd1d680f24c304f3e6d813e318da017a49abea80bd4c929784d359e0159bc",
     "skills/maintain-fork/agents/openai.yaml": "ab33a4f1e1e909d05239ce83e70501f918710d0eba74bcd6c57ce062bc152aff",
     "skills/refactor-referee/SKILL.md": "45e3e63c90da3c2f71dcd0a4b7ffe7db0c73e7b94bd3e60a023c30822bc04f6a",
     "skills/refactor-referee/agents/openai.yaml": "f9df5a4dee427c242b44a9b4ab7d1577cca3974e43947540fa9279c4ee07d338",
