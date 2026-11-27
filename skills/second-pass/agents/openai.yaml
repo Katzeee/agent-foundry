@@ -1,6 +1,6 @@
 interface:
   display_name: "Second Pass"
-  short_description: "Review coupling exposed by a recent change"
-  default_prompt: "Use $second-pass to review the latest change and propose abstractions that make similar changes more focused."
+  short_description: "Check that a change replaces the design it supersedes"
+  default_prompt: "Use $second-pass to check that the latest change or plan replaces the design it supersedes, and propose the structures that finish the replacement."
 policy:
   allow_implicit_invocation: false
